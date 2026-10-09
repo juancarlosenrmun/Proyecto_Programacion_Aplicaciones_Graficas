@@ -35,7 +35,7 @@ void framebuffer_size_callback ( GLFWwindow *window, int width, int height )
 {
     //glViewport ( 0, 0, width, height );
     PAG::Renderer::getInstance().establecerViewport(0,0,width,height);
-    PAG::GUI::getInstance().addMensaje("Resize callback called");
+    //PAG::GUI::getInstance().addMensaje("Resize callback called");
 }
 
 // - Esta función callback será llamada cada vez que se pulse una tecla
@@ -46,7 +46,7 @@ void key_callback ( GLFWwindow *window, int key, int scancode, int action, int m
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
-    PAG::GUI::getInstance().addMensaje("Key callback called");
+    //PAG::GUI::getInstance().addMensaje("Key callback called");
 }
 
 // - Esta función callback será llamada cada vez que se pulse algún botón
