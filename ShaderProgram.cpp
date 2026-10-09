@@ -59,4 +59,36 @@ namespace PAG {
             throw std::runtime_error("Error al enlazar el Shader Program:\n" + logMsg);
         }
     }
+
+    void ShaderProgram::cargarDesdeArchivos(const std::string& nombreBase) {
+        std::string rutaVS = nombreBase + "-vs.glsl";
+        std::string rutaFS = nombreBase + "-fs.glsl";
+
+        std::string codigoVS = cargarArchivoTexto(rutaVS);
+        std::string codigoFS = cargarArchivoTexto(rutaFS);
+
+        // Liberar programa anterior si existía
+        liberarRecursos();
+
+        // 1. Vertex Shader
+        idVS = glCreateShader(GL_VERTEX_SHADER);
+        const GLchar* fuenteVS = codigoVS.c_str();
+        glShaderSource(idVS, 1, &fuenteVS, nullptr);
+        glCompileShader(idVS);
+        comprobarCompilacionShader(idVS, "Vertex Shader (" + rutaVS + ")");
+
+        // 2. Fragment Shader
+        idFS = glCreateShader(GL_FRAGMENT_SHADER);
+        const GLchar* fuenteFS = codigoFS.c_str();
+        glShaderSource(idFS, 1, &fuenteFS, nullptr);
+        glCompileShader(idFS);
+        comprobarCompilacionShader(idFS, "Fragment Shader (" + rutaFS + ")");
+
+        // 3. Shader Program
+        idSP = glCreateProgram();
+        glAttachShader(idSP, idVS);
+        glAttachShader(idSP, idFS);
+        glLinkProgram(idSP);
+        comprobarEnlazadoProgram(idSP);
+    }
 }
