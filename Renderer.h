@@ -11,6 +11,7 @@
 #include<string>
 #include<stdexcept>
 #include "Listener.h"
+#include "ShaderProgram.h"
 
 namespace PAG
 {
@@ -23,9 +24,8 @@ namespace PAG
         private:
             static Renderer* instance; ///< Puntero al objeto
 
-            GLuint idVS = 0; ///<  Identificador del vertex shader
-            GLuint idFS = 0; ///<  Identificador del fragment shader
-            GLuint idSP = 0; ///<  Identificador del shader program
+            ShaderProgram shaderProgram;
+
             GLuint idVAO = 0; ///<  Identificador del vertex array object
             GLuint idVBO = 0; ///<  Identificador del vertex buffer object
             GLuint idIBO = 0; ///<  Identificador del index buffer object
@@ -34,11 +34,6 @@ namespace PAG
 
             // El constructor es privado para evitar que se cree el objeto desde otros módulos
             Renderer();
-
-            //Funciones auxiliares
-            std::string cargarArchivoTexto(const std::string& rutaArchivo);
-            void comprobarComprobacionShader(GLuint shader, const std::string& tipoShader);
-            void comprobarEnlazadoProgram(GLuint program);
 
         public:
             ~Renderer();
@@ -56,10 +51,9 @@ namespace PAG
             void mostrarInformacionGL();
 
             void notificarCambioColor(float r, float g, float b, float a) override;
+            void notificarCargarShader(const std::string &nombreBase) override;
 
-            void creaShaderProgram(const std::string& nombreBase);
             void creaModelo();
-
             void crearModeloNoEntrelazado();
             void crearModeloEntrelazado();
     };

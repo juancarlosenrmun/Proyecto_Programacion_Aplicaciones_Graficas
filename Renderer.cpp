@@ -30,15 +30,6 @@ namespace PAG {
      */
     Renderer::~Renderer()
     {
-        if ( idVS != 0 )
-        { glDeleteShader ( idVS );
-        }
-        if ( idFS != 0 )
-        { glDeleteShader ( idFS );
-        }
-        if ( idSP != 0 )
-        { glDeleteProgram ( idSP );
-        }
         if ( idVBO != 0 )
         { glDeleteBuffers ( 1, &idVBO );
         }
@@ -81,7 +72,7 @@ namespace PAG {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // refrescamos el buffer
 
         glPolygonMode ( GL_FRONT_AND_BACK, GL_FILL );
-        glUseProgram ( idSP );
+        shaderProgram.activar();
         glBindVertexArray ( idVAO );
         glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, idIBO );
         glDrawElements ( GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr );
@@ -137,37 +128,6 @@ namespace PAG {
         establecerColor(r, g, b, a);
     }
 
-    /**
-    * Método para crear, compilar y enlazar el shader program
-    * @note No se incluye ninguna comprobación de errores
-    */
-    void PAG::Renderer::creaShaderProgram(const std::string& nombreBase)
-    {
-        //Obtenemsos la ruta
-        std::string rutaVS = nombreBase + "-vs.glsl";
-        std::string rutaFS = nombreBase + "-fs.glsl";
-
-        //Cargamos el codigo fuente
-        std::string miVertexShader = cargarArchivoTexto(rutaVS);
-        std::string miFragmentShader = cargarArchivoTexto(rutaFS);
-
-        idVS = glCreateShader ( GL_VERTEX_SHADER );
-        const GLchar* fuenteVS = miVertexShader.c_str ();
-        glShaderSource ( idVS, 1, &fuenteVS, nullptr );
-        glCompileShader ( idVS );
-
-        idFS = glCreateShader ( GL_FRAGMENT_SHADER );
-        const GLchar* fuenteFS = miFragmentShader.c_str ();
-        glShaderSource ( idFS, 1, &fuenteFS, nullptr );
-        glCompileShader ( idFS );
-        comprobarComprobacionShader(idFS, "Fragment Shader");
-
-        idSP = glCreateProgram ();
-        glAttachShader ( idSP, idVS );
-        glAttachShader ( idSP, idFS );
-        glLinkProgram ( idSP );
-        comprobarEnlazadoProgram(idSP);
-    }
 
 
     /**
@@ -177,64 +137,6 @@ namespace PAG {
     {
         crearModeloEntrelazado();
         //crearModeloNoEntrelazado();
-    }
-
-    /**
-     * @brief Comprueba si hubo errores durante la compilación de un Shader.
-     * @param tipoShader std::string&
-     * @param shader GLuit
-     * @throws std::runtime_error si falla la compilación.
-     */
-    void Renderer::comprobarComprobacionShader(GLuint shader, const std::string& tipoShader) {
-        GLint compilado = GL_FALSE;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &compilado);
-
-        if (compilado == GL_FALSE) {
-            GLint logLength = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
-
-            std::string logMsg(logLength, '\0');
-            glGetShaderInfoLog(shader, logLength, &logLength, &logMsg[0]);
-
-            throw std::runtime_error("Error al compilar " + tipoShader + ":\n" + logMsg);
-        }
-    }
-
-    /**
-     * @brief Comprueba si hubo errores durante el enlazado del Shader Program.
-     * @param program GLuit
-     * @throws std::runtime_error si falla el enlazado.
-     */
-    void Renderer::comprobarEnlazadoProgram(GLuint program) {
-        GLint enlazado = GL_FALSE;
-        glGetProgramiv(program, GL_LINK_STATUS, &enlazado);
-
-        if (enlazado == GL_FALSE) {
-            GLint logLength = 0;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
-
-            std::string logMsg(logLength, '\0');
-            glGetProgramInfoLog(program, logLength, &logLength, &logMsg[0]);
-
-            throw std::runtime_error("Error al enlazar el Shader Program:\n" + logMsg);
-        }
-    }
-
-    /**
-     * @brief Lee el contenido íntegro de un archivo de texto en disco.
-     * @param rutaArchivo Ruta relativa o absoluta del archivo.
-     * @return Cadena std::string con el código fuente.
-     * @throws std::runtime_error si no se puede abrir el archivo.
-     */
-    std::string Renderer::cargarArchivoTexto(const std::string& rutaArchivo) {
-        std::ifstream archivo(rutaArchivo);
-        if (!archivo.is_open()) {
-            throw std::runtime_error("No se pudo abrir el archivo de shader: " + rutaArchivo);
-        }
-
-        std::stringstream buffer;
-        buffer << archivo.rdbuf();
-        return buffer.str();
     }
 
     /**
