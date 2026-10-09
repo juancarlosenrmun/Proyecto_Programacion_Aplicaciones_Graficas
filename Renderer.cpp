@@ -238,9 +238,9 @@ namespace PAG {
     }
 
     /**
-     * @brief Generar el modelo con VBOs entrelazados.
+     * @brief Generar el modelo con VBOs no entrelazados.
      */
-    void Renderer::crearModeloEntrelazado() {
+    void Renderer::crearModeloNoEntrelazado() {
 
         GLuint indices[] = { 0, 1, 2 };
 
@@ -285,9 +285,9 @@ namespace PAG {
     }
 
     /**
-     * @brief Generar el modelo con VBOs no entrelazados.
+     * @brief Generar el modelo con VBOs entrelazados.
      */
-    void Renderer::crearModeloNoEntrelazado() {
+    void Renderer::crearModeloEntrelazado() {
 
         GLuint indices[] = { 0, 1, 2 };
 
