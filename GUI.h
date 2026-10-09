@@ -38,6 +38,7 @@ namespace PAG {
             // Ventanas
             void selectorColorTriangular();
             void consola();
+            void ventanaShaderProgram();
 
             // Notificar observadores
             std::vector<Listener*> listeners;  ///< Lista de observadores suscritos a los eventos de la GUI.

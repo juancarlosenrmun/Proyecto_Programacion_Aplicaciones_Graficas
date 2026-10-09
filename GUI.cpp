@@ -99,6 +99,24 @@ namespace PAG {
     }
 
     /**
+     * @brief Ventana para especificar el nombre base del Shader Program y cargarlo.
+     */
+    void GUI::ventanaShaderProgram() {
+        ImGui::SetNextWindowPos(ImVec2(10, 340), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(360, 100), ImGuiCond_Once);
+        if (ImGui::Begin("Shader Program")) {
+            // Caja de texto vinculada a std::string con selección automática
+            ImGui::InputText("##shaderName", &nombreShaderBase, ImGuiInputTextFlags_AutoSelectAll);
+
+            // Botón de carga
+            if (ImGui::Button("Load")) {
+                notificarObservadoresShader();
+            }
+        }
+        ImGui::End();
+    }
+
+    /**
      * @brief Genera y dibuja los controles de la interfaz en el fotograma actual.
      */
     void GUI::render() {
