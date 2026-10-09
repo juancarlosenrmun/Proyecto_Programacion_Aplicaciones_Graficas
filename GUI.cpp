@@ -53,7 +53,7 @@ namespace PAG {
     void GUI::selectorColorTriangular() {
         //Definimos ventana y controles
         ImGui::SetNextWindowPos(ImVec2(10,10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(360, 420), ImGuiCond_Once); //Tenemos que establcer el tamaño de la ventan
+        ImGui::SetNextWindowSize(ImVec2(325, 300), ImGuiCond_Once); //Tenemos que establcer el tamaño de la ventan
         if (ImGui::Begin("COLOR DE FONDO")) {
             ImGui::SetWindowFontScale(1.0f);
 
@@ -69,8 +69,8 @@ namespace PAG {
      * @brief Renderiza la ventana correspondiente a la consola de eventos.
      */
     void GUI::consola() {
-        ImGui::SetNextWindowPos(ImVec2(400,10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(360, 420), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(600,10), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(360, 300), ImGuiCond_Once);
         if (ImGui::Begin("CONSOLA")) {
 
             //Añadimos un botón para limpiar la consola
@@ -102,8 +102,8 @@ namespace PAG {
      * @brief Ventana para especificar el nombre base del Shader Program y cargarlo.
      */
     void GUI::ventanaShaderProgram() {
-        ImGui::SetNextWindowPos(ImVec2(10, 340), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(360, 100), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(10, 450), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(325, 100), ImGuiCond_Once);
         if (ImGui::Begin("Shader Program")) {
             // Caja de texto vinculada a std::string con selección automática
             ImGui::InputText("##shaderName", &nombreShaderBase, ImGuiInputTextFlags_AutoSelectAll);
