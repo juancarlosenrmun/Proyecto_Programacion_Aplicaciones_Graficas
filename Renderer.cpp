@@ -128,7 +128,15 @@ namespace PAG {
         establecerColor(r, g, b, a);
     }
 
-
+    void Renderer::notificarCargarShader(const std::string& nombreBase) {
+        try {
+            // Carga el shader mediante la clase ShaderProgram
+            shaderProgram.cargarDesdeArchivos(nombreBase);
+            GUI::getInstance().addMensaje("Shader Program '" + nombreBase + "' cargado con éxito.");
+        } catch (const std::exception& e) {
+            GUI::getInstance().addMensaje(e.what());
+        }
+    }
 
     /**
      * @brief Método para crear el VAO del triángulo con atributos de posición y color.

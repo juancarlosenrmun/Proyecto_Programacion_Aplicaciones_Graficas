@@ -14,7 +14,8 @@ file( GLOB IMGUI_FILES ImGui/src/*.cpp )
 add_executable(${PROJECT_NAME} ${MY_FILES} ${GLAD_FILES} ${IMGUI_FILES}
         Listener.h
         ShaderProgram.cpp
-        ShaderProgram.h)
+        ShaderProgram.h
+        ImGui/src/imgui_stdlib.cpp)
 
 target_include_directories( ${PROJECT_NAME} PUBLIC GLAD/include ImGui/include )
 
