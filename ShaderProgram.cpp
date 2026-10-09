@@ -3,3 +3,7 @@
 //
 
 #include "ShaderProgram.h"
+
+namespace PAG {
+
+}
