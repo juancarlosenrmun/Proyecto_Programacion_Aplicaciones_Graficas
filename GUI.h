@@ -32,6 +32,9 @@ namespace PAG {
 
             float colorActual[4] = {0.6f, 0.6f, 0.6f, 1.0f}; ///< Estado local del color de fondo.
 
+            // Campo para el nombre base del shader
+            std::string nombreShaderBase = "pag04";
+
             // Ventanas
             void selectorColorTriangular();
             void consola();

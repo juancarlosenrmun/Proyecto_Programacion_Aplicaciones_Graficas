@@ -177,4 +177,10 @@ namespace PAG {
             listener->notificarCambioColor(colorActual[0], colorActual[1], colorActual[2], colorActual[3]);
         }
     }
+
+    void GUI::notificarObservadoresShader() {
+        for (auto* listener : listeners) {
+            listener->notificarCargarShader(nombreShaderBase);
+        }
+    }
 }
