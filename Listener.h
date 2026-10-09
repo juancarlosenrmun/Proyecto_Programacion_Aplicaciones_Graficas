@@ -28,6 +28,12 @@ namespace PAG {
              * @param a Componente Alfa (Transparencia) [0.0f, 1.0f].
              */
             virtual void notificarCambioColor(float r, float g, float b, float a) = 0;
+
+            /**
+             * @brief Callback para solicitud de carga de un nuevo Shader Program desde la GUI.
+             * @param nombreBase Prefijo de los archivos .glsl.
+             */
+            virtual void notificarCargarShader(const std::string& nombreBase) {}
     };
 }
 
