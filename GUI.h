@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <imgui_stdlib.h>
 #include <string>
 #include <vector>
 #include <GLFW/glfw3.h>
@@ -38,6 +39,7 @@ namespace PAG {
             // Notificar observadores
             std::vector<Listener*> listeners;  ///< Lista de observadores suscritos a los eventos de la GUI.
             void notificarObservadoresColor();
+            void notificarObservadoresShader();
         public:
             virtual ~GUI();
             static GUI& getInstance();
