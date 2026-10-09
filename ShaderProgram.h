@@ -16,6 +16,7 @@ namespace PAG {
             GLuint idSP = 0; ///< Identificador del Shader Program
 
             //Funciones auxiliares
+            std::string cargarArchivoTexto(const std::string& rutaArchivo);
             void liberarRecursos();
         public:
             ShaderProgram();
