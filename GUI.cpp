@@ -126,7 +126,7 @@ namespace PAG {
         ImGui::NewFrame();
 
         selectorColorTriangular();
-
+        ventanaShaderProgram();
         consola();
 
         //Renderemos ImGui sobre el viewport de OpenGL
