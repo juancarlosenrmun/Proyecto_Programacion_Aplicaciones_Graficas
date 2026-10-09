@@ -11,6 +11,10 @@ namespace PAG {
             GLuint idVS = 0; ///< Identificador del Vertex Shader
             GLuint idFS = 0; ///< Identificador del Fragment Shader
             GLuint idSP = 0; ///< Identificador del Shader Program
+
+        public:
+            ShaderProgram();
+            ~ShaderProgram();
     };
 }
 
