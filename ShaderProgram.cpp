@@ -29,4 +29,19 @@ namespace PAG {
         buffer << archivo.rdbuf();
         return buffer.str();
     }
+
+    void ShaderProgram::comprobarCompilacionShader(GLuint shader, const std::string& tipoShader) {
+        GLint compilado = GL_FALSE;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &compilado);
+
+        if (compilado == GL_FALSE) {
+            GLint logLength = 0;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+
+            std::string logMsg(logLength, '\0');
+            glGetShaderInfoLog(shader, logLength, &logLength, &logMsg[0]);
+
+            throw std::runtime_error("Error al compilar " + tipoShader + ":\n" + logMsg);
+        }
+    }
 }
