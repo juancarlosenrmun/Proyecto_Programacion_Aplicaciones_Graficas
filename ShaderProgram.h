@@ -18,6 +18,7 @@ namespace PAG {
             //Funciones auxiliares
             std::string cargarArchivoTexto(const std::string& rutaArchivo);
             void comprobarCompilacionShader(GLuint shader, const std::string &tipoShader);
+            void comprobarEnlazadoProgram(GLuint program);
             void liberarRecursos();
         public:
             ShaderProgram();

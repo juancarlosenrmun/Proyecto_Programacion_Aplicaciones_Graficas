@@ -44,4 +44,19 @@ namespace PAG {
             throw std::runtime_error("Error al compilar " + tipoShader + ":\n" + logMsg);
         }
     }
+
+    void ShaderProgram::comprobarEnlazadoProgram(GLuint program) {
+        GLint enlazado = GL_FALSE;
+        glGetProgramiv(program, GL_LINK_STATUS, &enlazado);
+
+        if (enlazado == GL_FALSE) {
+            GLint logLength = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+
+            std::string logMsg(logLength, '\0');
+            glGetProgramInfoLog(program, logLength, &logLength, &logMsg[0]);
+
+            throw std::runtime_error("Error al enlazar el Shader Program:\n" + logMsg);
+        }
+    }
 }
