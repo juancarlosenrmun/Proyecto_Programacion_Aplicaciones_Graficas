@@ -4,6 +4,9 @@
 
 #ifndef PROYECTO_PAG_SHADERPROGRAM_H
 #define PROYECTO_PAG_SHADERPROGRAM_H
+#include "glad/glad.h"
+#include <string>
+#include <stdexcept>
 
 namespace PAG {
     class ShaderProgram {
