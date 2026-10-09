@@ -113,7 +113,7 @@ void scroll_callback ( GLFWwindow *window, double xoffset, double yoffset )
 
 int main()
 {
-    std::cout << "Starting Application PAG - Prueba 02" << std::endl;
+    std::cout << "Starting Application PAG" << std::endl;
 
     // - Este callback hay que registrarlo ANTES de llamar a glfwInit
     glfwSetErrorCallback ( (GLFWerrorfun) error_callback );
@@ -160,18 +160,18 @@ int main()
         return -3;
     }
 
+    // - Registramos los callbacks que responderán a los eventos principales
+    glfwSetWindowRefreshCallback ( window, window_refresh_callback );
+    glfwSetFramebufferSizeCallback ( window, framebuffer_size_callback );
+    glfwSetKeyCallback ( window, key_callback );
+    glfwSetMouseButtonCallback ( window, mouse_button_callback );
+    glfwSetScrollCallback ( window, scroll_callback );
+
     // Inicializamos la clase GUI pasando el puntero a la ventana GLFW
     PAG::GUI::getInstance().inicializar(window);
     try
     {
         PAG::Renderer::getInstance().inicializar();
-
-        // - Registramos los callbacks que responderán a los eventos principales
-        glfwSetWindowRefreshCallback ( window, window_refresh_callback );
-        glfwSetFramebufferSizeCallback ( window, framebuffer_size_callback );
-        glfwSetKeyCallback ( window, key_callback );
-        glfwSetMouseButtonCallback ( window, mouse_button_callback );
-        glfwSetScrollCallback ( window, scroll_callback );
 
         PAG::Renderer::getInstance().mostrarInformacionGL();
 
