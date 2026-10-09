@@ -91,4 +91,10 @@ namespace PAG {
         glLinkProgram(idSP);
         comprobarEnlazadoProgram(idSP);
     }
+
+    void ShaderProgram::activar() const {
+        if (idSP != 0) {
+            glUseProgram(idSP);
+        }
+    }
 }
