@@ -15,6 +15,21 @@ namespace PAG {
         public:
             ShaderProgram();
             ~ShaderProgram();
+
+            // Deshabilitar copia para evitar borrados duplicados de recursos OpenGL
+            ShaderProgram(const ShaderProgram&) = delete;
+            ShaderProgram& operator=(const ShaderProgram&) = delete;
+
+            // Cargar, compilar y enlazar desde archivos .glsl
+            void cargarDesdeArchivos(const std::string& nombreBase);
+
+            // Activa el shader program en la GPU (glUseProgram)
+            void activar() const;
+
+            // Consulta si el programa está compilado y listo
+            bool estaListo() const { return idSP != 0; }
+
+            GLuint getIdProgram() const { return idSP; }
     };
 }
 
