@@ -15,6 +15,8 @@ namespace PAG {
             GLuint idFS = 0; ///< Identificador del Fragment Shader
             GLuint idSP = 0; ///< Identificador del Shader Program
 
+            //Funciones auxiliares
+            void liberarRecursos();
         public:
             ShaderProgram();
             ~ShaderProgram();
