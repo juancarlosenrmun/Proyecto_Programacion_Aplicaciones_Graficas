@@ -5,9 +5,11 @@
 #ifndef PROYECTO_PAG_SHADERPROGRAM_H
 #define PROYECTO_PAG_SHADERPROGRAM_H
 
+namespace PAG {
+    class ShaderProgram {
+    };
+}
 
-class ShaderProgram {
-};
 
 
 #endif //PROYECTO_PAG_SHADERPROGRAM_H
