@@ -32,7 +32,7 @@ En esta práctica se ha extendido el motor gráfico desacoplando la interfaz de 
 En esta práctica se ha avanzado en el pipeline de renderizado desacoplando los archivos GLSL de C++ y añadiendo soporte para múltiples atributos por vértice (posición y color interpolado).
 
 ### 1. Carga Dinámica de Shaders GLSL desde Disco
-* **Extracción a Archivos Externos:** El código GLSL se ha extraído a los archivos independientes `pag04-vs.glsl` (Vertex Shader) y `pag04-fs.glsl` (Fragment Shader).
+* **Extracción a Archivos Externos:** El código GLSL se ha extraído a los archivos independientes `pag05-vs.glsl` (Vertex Shader) y `pag05-fs.glsl` (Fragment Shader).
 * **Lectura Dinámica (`cargarArchivoTexto`):** Se implementó el método auxiliar privado en `PAG::Renderer` para leer el código fuente de los shaders en tiempo de ejecución utilizando `std::ifstream` y `std::stringstream`.
 * **Verificación de Errores (`comprobarComprobacionShader` y `comprobarEnlazadoProgram`):** Se agregaron métodos de control que consultan la bitácora de OpenGL (`glGetShaderInfoLog` y `glGetProgramInfoLog`) y lanzan excepciones `std::runtime_error` en caso de fallos de compilación o enlazado.
 
