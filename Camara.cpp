@@ -65,4 +65,18 @@ namespace PAG {
           posicion += desplazamiento;
           puntoInteres += desplazamiento;
      }
+
+     void Camara::orbitar(float deltaLatGrados, float deltaLonGrados) {
+          glm::vec3 dir = posicion - puntoInteres;
+
+          // Longitud (eje Y global)
+          dir = glm::rotateY(dir, glm::radians(deltaLonGrados));
+
+          // Latitud (eje u local)
+          glm::vec3 n = glm::normalize(dir);
+          glm::vec3 u = glm::normalize(glm::cross(up, n));
+          dir = glm::rotate(dir, glm::radians(deltaLatGrados), u);
+
+          posicion = puntoInteres + dir;
+     }
 }
