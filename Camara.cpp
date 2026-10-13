@@ -41,4 +41,13 @@ namespace PAG {
           dir = glm::rotate(dir, glm::radians(anguloGrados), v);
           puntoInteres = posicion + dir;
      }
+
+     void Camara::tilt(float anguloGrados) {
+          glm::vec3 n = glm::normalize(posicion - puntoInteres);
+          glm::vec3 u = glm::normalize(glm::cross(up, n)); // Eje horizontal local
+
+          glm::vec3 dir = puntoInteres - posicion;
+          dir = glm::rotate(dir, glm::radians(anguloGrados), u);
+          puntoInteres = posicion + dir;
+     }
 }
