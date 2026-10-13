@@ -33,6 +33,27 @@ namespace PAG {
             float zNear;            ///< Plano cercano de recorte
             float zFar;             ///< Plano lejano de recorte
 
+    public:
+        Camara();
+        Camara(glm::vec3 pos, glm::vec3 lookAt, glm::vec3 vUp, float fov, float aspect, float near, float far);
+        ~Camara() = default;
+
+        // Obtención de matrices de transformación
+        glm::mat4 getMatrizVision() const;
+        glm::mat4 getMatrizProyeccion() const;
+
+        // Getters y Setters
+        void establecerAspecto(float nuevoAspecto) { aspecto = nuevoAspecto; }
+        float getFovY() const { return fovY; }
+        void setFovY(float fov) { fovY = fov; }
+
+        // Movimientos de cámara
+        void pan(float anguloGrados);
+        void tilt(float anguloGrados);
+        void dolly(float desplX, float desplZ);
+        void crane(float desplY);
+        void orbitar(float deltaLatGrados, float deltaLonGrados);
+        void zoom(float deltaFovGrados);
     };
 }
 
