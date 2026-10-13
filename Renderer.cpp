@@ -138,6 +138,17 @@ namespace PAG {
         }
     }
 
+    void Renderer::notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) {
+        switch (tipo) {
+            case TipoMovimiento::PAN:   camara.pan(delta1); break;
+            case TipoMovimiento::TILT:  camara.tilt(delta1); break;
+            case TipoMovimiento::DOLLY: camara.dolly(delta1, delta2); break;
+            case TipoMovimiento::CRANE: camara.crane(delta1); break;
+            case TipoMovimiento::ORBIT: camara.orbitar(delta1, delta2); break;
+            case TipoMovimiento::ZOOM:  camara.zoom(delta1); break;
+        }
+    }
+
     /**
      * @brief Método para crear el VAO del triángulo con atributos de posición y color.
      */
