@@ -12,7 +12,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace PAG {
+
+    enum class TipoMovimiento {
+        PAN,
+        TILT,
+        DOLLY,
+        CRANE,
+        ORBIT,
+        ZOOM
+    };
+
     class Camara {
+
+
     };
 }
 
