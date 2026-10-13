@@ -50,4 +50,13 @@ namespace PAG {
           dir = glm::rotate(dir, glm::radians(anguloGrados), u);
           puntoInteres = posicion + dir;
      }
+
+     void Camara::dolly(float desplX, float desplZ) {
+          glm::vec3 n = glm::normalize(posicion - puntoInteres);
+          glm::vec3 u = glm::normalize(glm::cross(up, n));
+
+          glm::vec3 desplazamiento = u * desplX + n * desplZ;
+          posicion += desplazamiento;
+          puntoInteres += desplazamiento;
+     }
 }
