@@ -11,3 +11,6 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include "Camara.h"
 
+namespace PAG {
+
+}
