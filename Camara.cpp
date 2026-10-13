@@ -23,4 +23,12 @@ namespace PAG {
 
      Camara::Camara(glm::vec3 pos, glm::vec3 lookAt, glm::vec3 vUp, float fov, float aspect, float nearP, float farP)
          : posicion(pos), puntoInteres(lookAt), up(vUp), fovY(fov), aspecto(aspect), zNear(nearP), zFar(farP) {}
+
+    glm::mat4 Camara::getMatrizVision() const {
+         return glm::lookAt(posicion, puntoInteres, up);
+    }
+
+    glm::mat4 Camara::getMatrizProyeccion() const {
+         return glm::perspective(glm::radians(fovY), aspecto, zNear, zFar);
+    }
 }
