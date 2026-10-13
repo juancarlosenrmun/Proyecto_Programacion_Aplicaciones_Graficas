@@ -27,7 +27,7 @@ namespace PAG
 
             Camara camara;
             TipoMovimiento movimientoActivo = TipoMovimiento::PAN; // Movimiento por defecto
-            float sensibilidadRaton = 0.2f;
+            float sensibilidadRaton = 0.5f;
 
             ShaderProgram shaderProgram;
 

@@ -117,7 +117,7 @@ namespace PAG {
     }
 
     void GUI::ventanaCamara() {
-        ImGui::SetNextWindowPos(ImVec2(10, 450), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(600, 450), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(360, 180), ImGuiCond_Once);
 
         if (ImGui::Begin("Camera")) {
