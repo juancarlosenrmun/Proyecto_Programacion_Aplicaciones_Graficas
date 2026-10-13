@@ -94,6 +94,9 @@ namespace PAG {
      */
     void Renderer::establecerViewport(int x, int y, int width, int height) {
         glViewport(x, y, width, height);
+        if (height > 0) {
+            camara.establecerAspecto(static_cast<float>(width) / static_cast<float>(height));
+        }
     }
 
     /**
