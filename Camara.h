@@ -23,7 +23,15 @@ namespace PAG {
     };
 
     class Camara {
+        private:
+            glm::vec3 posicion;     ///< Posición de la cámara (eye)
+            glm::vec3 puntoInteres; ///< Punto al que mira la cámara (lookAt)
+            glm::vec3 up;           ///< Vector de orientación vertical
 
+            float fovY;             ///< Campo de visión vertical en grados
+            float aspecto;          ///< Relación de aspecto (Ancho / Alto)
+            float zNear;            ///< Plano cercano de recorte
+            float zFar;             ///< Plano lejano de recorte
 
     };
 }
