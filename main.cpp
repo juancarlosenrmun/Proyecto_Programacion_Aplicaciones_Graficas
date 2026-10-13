@@ -67,6 +67,21 @@ void mouse_button_callback ( GLFWwindow *window, int button, int action, int mod
     PAG::GUI::getInstance().procesarBotonRaton(button, action);
 }
 
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    // Si la interfaz de ImGui está capturando el ratón, ignoramos el arrastre sobre la escena
+    if (ImGui::GetIO().WantCaptureMouse) return;
+
+    if (botonIzquierdoPulsado) {
+        float deltaX = static_cast<float>(xpos - xPosAnterior);
+        float deltaY = static_cast<float>(ypos - yPosAnterior);
+
+        PAG::Renderer::getInstance().aplicarMovimientoRaton(deltaX, deltaY);
+
+        xPosAnterior = xpos;
+        yPosAnterior = ypos;
+    }
+}
+
 // - Esta función callback será llamada cada vez que se mueva la rueda
 // del ratón sobre el área de dibujo OpenGL.
 void scroll_callback ( GLFWwindow *window, double xoffset, double yoffset )

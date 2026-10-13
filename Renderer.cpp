@@ -139,6 +139,9 @@ namespace PAG {
     }
 
     void Renderer::notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) {
+
+        movimientoActivo = tipo;
+
         switch (tipo) {
             case TipoMovimiento::PAN:   camara.pan(delta1); break;
             case TipoMovimiento::TILT:  camara.tilt(delta1); break;
@@ -242,5 +245,39 @@ namespace PAG {
         glGenBuffers(1, &idIBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    }
+
+    void Renderer::aplicarMovimientoRaton(float deltaX, float deltaY) {
+        switch (movimientoActivo) {
+            case TipoMovimiento::PAN:
+                // Arrastrar en X rota la cámara en horizontal (Pan)
+                camara.pan(-deltaX * sensibilidadRaton);
+                break;
+
+            case TipoMovimiento::TILT:
+                // Arrastrar en Y rota la cámara en vertical (Tilt)
+                camara.tilt(-deltaY * sensibilidadRaton);
+                break;
+
+            case TipoMovimiento::DOLLY:
+                // Arrastrar en X/Y traslada la cámara en el plano local
+                camara.dolly(deltaX * 0.01f, deltaY * 0.01f);
+                break;
+
+            case TipoMovimiento::CRANE:
+                // Arrastrar en Y sube o baja la cámara en el eje Y global
+                camara.crane(-deltaY * 0.01f);
+                break;
+
+            case TipoMovimiento::ORBIT:
+                // Arrastrar en Y cambia la latitud, arrastrar en X cambia la longitud
+                camara.orbitar(-deltaY * sensibilidadRaton, -deltaX * sensibilidadRaton);
+                break;
+
+            case TipoMovimiento::ZOOM:
+                // Arrastrar en Y aumenta o disminuye el FOV
+                camara.zoom(deltaY * sensibilidadRaton);
+                break;
+        }
     }
 }

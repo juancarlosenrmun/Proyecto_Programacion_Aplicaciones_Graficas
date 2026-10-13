@@ -25,8 +25,11 @@ namespace PAG
         private:
             static Renderer* instance; ///< Puntero al objeto
 
-            ShaderProgram shaderProgram;
             Camara camara;
+            TipoMovimiento movimientoActivo = TipoMovimiento::PAN; // Movimiento por defecto
+            float sensibilidadRaton = 0.2f;
+
+            ShaderProgram shaderProgram;
 
             GLuint idVAO = 0; ///<  Identificador del vertex array object
             GLuint idVBO = 0; ///<  Identificador del vertex buffer object
@@ -59,6 +62,8 @@ namespace PAG
             void creaModelo();
             void crearModeloNoEntrelazado();
             void crearModeloEntrelazado();
+
+            void aplicarMovimientoRaton(float deltaX, float deltaY);
     };
 
 };
