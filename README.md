@@ -4,7 +4,7 @@
 **Año:** 2026
 
 ---
-## Práctica 2: Renderer
+## Versión 2: Renderer
 
 ###  Resumen de Cambios Realizados
 
@@ -27,7 +27,7 @@ En esta práctica se ha extendido el motor gráfico desacoplando la interfaz de 
 
 ---
 
-## Práctica 3: Primer Triángulo
+## Versión 3: Primer Triángulo
 
 En esta práctica se ha avanzado en el pipeline de renderizado desacoplando los archivos GLSL de C++ y añadiendo soporte para múltiples atributos por vértice (posición y color interpolado).
 
@@ -47,10 +47,28 @@ Se implementaron dos estrategias para la gestión de buffers de vértices en `PA
 * **VBO Entrelazado (`crearModeloEntrelazado`):** Utiliza una estructura C++ (`struct Vertice`) contigua en memoria y un único buffer (`idVBO`), haciendo uso de `sizeof(Vertice)` como *stride* y `offsetof` para calcular el desplazamiento (*offset*) de cada atributo.
 
 ---
+## Versión 04: Gestionando Shader Programs
+
+En esta práctica se ha completado el desacoplamiento de la compilación y enlazado de shaders fuera de `PAG::Renderer`, encapsulándolo en una clase dedicada y añadiendo control de carga interactiva desde la interfaz de usuario.
+
+### 1. Encapsulamiento en la Clase `PAG::ShaderProgram`
+* **Principio de Responsabilidad Única (SRP):** Se extrajo de `PAG::Renderer` toda la lógica asociada al ciclo de vida de los shaders (creación, lectura de ficheros `.glsl`, compilación de Vertex/Fragment Shader, enlazado del programa, liberación de recursos y activación con `glUseProgram`).
+* **Seguridad de Memoria de Vídeo:** `ShaderProgram` administra internamente los identificadores de la GPU (`idVS`, `idFS`, `idSP`), ofreciendo el método `estaListo()` para que `Renderer` verifique la validez del estado antes de emitir órdenes de renderizado.
+* **Manejo de Excepciones:** Ante cualquier fallo de apertura de archivo, compilación o enlazado, `ShaderProgram` captura el log técnico de OpenGL y lanza una excepción `std::runtime_error` que es enviada a la **CONSOLA** de ImGui.
+
+### 2. Interfaz Interactiva en Dear ImGui (`Shader Program`)
+* **Control de Entrada de Texto (`ImGui::InputText`):** Integración del módulo `imgui_stdlib.h` para vincular directamente objetos `std::string` (`nombreShaderBase`) al campo de texto de la interfaz con la marca `ImGuiInputTextFlags_AutoSelectAll`.
+* **Botón de Carga (`ImGui::Button`):** Se incorporó la ventana interactiva `"Shader Program"` con el botón **Load**, permitiendo al usuario ingresar la parte común del nombre del shader (ej. `../pag04`) para cargarlo en tiempo de ejecución.
+
+### 3. Extensión del Patrón Observador
+* **Actualización de `PAG::Listener`:** Se añadió el método virtual `notificarCargarShader(const std::string& nombreBase)` a la interfaz del observador.
+* **Flujo de Notificación:** Cuando el usuario pulsa el botón **Load** en la GUI, esta notifica a los observadores registrados. `PAG::Renderer` recibe el evento en `notificarCargarShader` y delega la lectura e instalación del nuevo shader en su atributo `shaderProgram`.
+
+---
 
 ## Diagrama de Clases UML Actualizado
 
-El siguiente diagrama refleja la estructura de clases del proyecto, incluyendo el patrón observador y los nuevos métodos/atributos añadidos a `PAG::Renderer`:
+El siguiente diagrama muestra la arquitectura desacoplada de la aplicación, destacando las clases Singleton (`GUI`, `Renderer`), la nueva clase de gestión de shaders (`ShaderProgram`) y el desacoplamiento mediante la interfaz `Listener`:
 
 ```mermaid
 classDiagram
@@ -58,21 +76,33 @@ classDiagram
         <<interface>>
         +~Listener()
         +notificarCambioColor(r: float, g: float, b: float, a: float)* void
+        +notificarCargarShader(nombreBase: const string&)* void
+    }
+
+    class ShaderProgram {
+        -idVS: GLuint
+        -idFS: GLuint
+        -idSP: GLuint
+        -cargarArchivoTexto(rutaArchivo: const string&) string
+        -comprobarCompilacionShader(shader: GLuint, tipoShader: const string&) void
+        -comprobarEnlazadoProgram(program: GLuint) void
+        -liberarRecursos() void
+        +ShaderProgram()
+        +~ShaderProgram()
+        +cargarDesdeArchivos(nombreBase: const string&) void
+        +activar() const void
+        +estaListo() const bool
+        +getIdProgram() const GLuint
     }
 
     class Renderer {
         -static instance: Renderer*
-        -idVS: GLuint
-        -idFS: GLuint
-        -idSP: GLuint
+        -shaderProgram: ShaderProgram
         -idVAO: GLuint
         -idVBO: GLuint
         -idIBO: GLuint
         -idVBO_color: GLuint
         -Renderer()
-        -cargarArchivoTexto(rutaArchivo: const string&) string
-        -comprobarComprobacionShader(shader: GLuint, tipoShader: const string&) void
-        -comprobarEnlazadoProgram(program: GLuint) void
         +~Renderer()
         +static getInstance() Renderer&
         +inicializar() void
@@ -82,7 +112,7 @@ classDiagram
         +obtenerColor(colorActual: float[4]) void
         +mostrarInformacionGL() void
         +notificarCambioColor(r: float, g: float, b: float, a: float) void
-        +creaShaderProgram(nombreBase: const string&) void
+        +notificarCargarShader(nombreBase: const string&) void
         +creaModelo() void
         +crearModeloEntrelazado() void
         +crearModeloNoEntrelazado() void
@@ -93,11 +123,14 @@ classDiagram
         -mensajes: vector~string~
         -autoScroll: bool
         -colorActual: float[4]
+        -nombreShaderBase: string
         -listeners: vector~Listener*~
         -GUI()
         -selectorColorTriangular() void
+        -ventanaShaderProgram() void
         -consola() void
         -notificarObservadoresColor() void
+        -notificarObservadoresShader() void
         +~GUI()
         +static getInstance() GUI&
         +inicializar(window: GLFWwindow*) void
@@ -115,6 +148,8 @@ classDiagram
     }
 
     Listener <|.. Renderer : Implementa
+    Renderer "1" *-- "1" ShaderProgram : Contiene / Delega
     GUI "1" o-- "*" Listener : listeners
     Main ..> GUI : Utiliza / Inicializa
     Main ..> Renderer : Utiliza / Inicializa
+```
