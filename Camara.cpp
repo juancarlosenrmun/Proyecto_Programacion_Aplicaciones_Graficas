@@ -31,4 +31,14 @@ namespace PAG {
     glm::mat4 Camara::getMatrizProyeccion() const {
          return glm::perspective(glm::radians(fovY), aspecto, zNear, zFar);
     }
+
+     void Camara::pan(float anguloGrados) {
+          glm::vec3 n = glm::normalize(posicion - puntoInteres);
+          glm::vec3 u = glm::normalize(glm::cross(up, n));
+          glm::vec3 v = glm::cross(n, u); // Eje vertical local
+
+          glm::vec3 dir = puntoInteres - posicion;
+          dir = glm::rotate(dir, glm::radians(anguloGrados), v);
+          puntoInteres = posicion + dir;
+     }
 }
