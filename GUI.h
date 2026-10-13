@@ -40,11 +40,17 @@ namespace PAG {
             void consola();
             void ventanaShaderProgram();
 
+            void ventanaCamara();
+
+            // Estado de la cámara en la GUI
+            TipoMovimiento tipoMovimientoActivo = TipoMovimiento::ZOOM;
+            float fovAnterior = 45.0f;
+
             // Notificar observadores
             std::vector<Listener*> listeners;  ///< Lista de observadores suscritos a los eventos de la GUI.
             void notificarObservadoresColor();
             void notificarObservadoresShader();
-            void notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2 = 0.0f) {}
+            void notificarObservadoresMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2 = 0.0f);
         public:
             virtual ~GUI();
             static GUI& getInstance();
