@@ -59,4 +59,10 @@ namespace PAG {
           posicion += desplazamiento;
           puntoInteres += desplazamiento;
      }
+
+     void Camara::crane(float desplY) {
+          glm::vec3 desplazamiento = glm::vec3(0.0f, desplY, 0.0f);
+          posicion += desplazamiento;
+          puntoInteres += desplazamiento;
+     }
 }
