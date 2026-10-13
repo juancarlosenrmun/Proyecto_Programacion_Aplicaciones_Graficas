@@ -5,9 +5,10 @@
 #ifndef PROYECTO_PAG_CAMARA_H
 #define PROYECTO_PAG_CAMARA_H
 
-
-class Camara {
-};
+namespace PAG {
+    class Camara {
+    };
+}
 
 
 #endif //PROYECTO_PAG_CAMARA_H
