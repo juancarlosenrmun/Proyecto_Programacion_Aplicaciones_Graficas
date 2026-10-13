@@ -97,4 +97,13 @@ namespace PAG {
             glUseProgram(idSP);
         }
     }
+
+    void ShaderProgram::setUniformMat4(const std::string& nombre, const glm::mat4& matriz) const {
+        if (idSP != 0) {
+            GLint location = glGetUniformLocation(idSP, nombre.c_str());
+            if (location != -1) {
+                glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matriz));
+            }
+        }
+    }
 }

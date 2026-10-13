@@ -7,6 +7,8 @@
 #include "glad/glad.h"
 #include <string>
 #include <stdexcept>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace PAG {
     class ShaderProgram {
@@ -38,6 +40,8 @@ namespace PAG {
             bool estaListo() const { return idSP != 0; }
 
             GLuint getIdProgram() const { return idSP; }
+
+            void setUniformMat4(const std::string& nombre, const glm::mat4& matriz) const;
     };
 }
 
