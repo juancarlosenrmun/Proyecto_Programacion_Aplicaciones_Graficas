@@ -66,9 +66,34 @@ En esta práctica se ha completado el desacoplamiento de la compilación y enlaz
 
 ---
 
-## Diagrama de Clases UML Actualizado
+## Práctica 05: La Cámara Virtual
 
-El siguiente diagrama muestra la arquitectura desacoplada de la aplicación, destacando las clases Singleton (`GUI`, `Renderer`), la nueva clase de gestión de shaders (`ShaderProgram`) y el desacoplamiento mediante la interfaz `Listener`:
+En esta práctica se ha añadido soporte completo para una cámara virtual 3D utilizando la biblioteca **GLM** (*OpenGL Mathematics*).
+
+### 1. Clase `PAG::Camara`
+* **Definición Teórica:** Implementa los parámetros de visión ($eye$, $lookAt$, $up$) y la proyección de la cámara ($fovY$, $aspecto$, $zNear$, $zFar$).
+* **Cálculo de Matrices:**
+  * **Matriz de Visión ($V$):** Generada mediante `glm::lookAt`.
+  * **Matriz de Proyección ($P$):** Generada mediante `glm::perspective`.
+* **Movimientos Soportados:**
+  * **Pan:** Rotación horizontal del vector de visión alrededor del eje vertical local $v$.
+  * **Tilt:** Rotación vertical del vector de visión alrededor del eje horizontal local $u$.
+  * **Dolly:** Traslación en el plano horizontal $XZ$ local.
+  * **Crane:** Traslación vertical en el eje $Y$.
+  * **Orbit:** Rotación en latitud y longitud alrededor del punto de interés $lookAt$.
+  * **Zoom:** Modificación interactiva del ángulo $fovY$.
+
+### 2. Envío de Uniforms al Vertex Shader
+* Se extendió la clase `PAG::ShaderProgram` con el método `setUniformMat4`.
+* Durante el ciclo de refresco (`refrescar()`), `PAG::Renderer` envía las matrices `mVis` y `mProy` al Vertex Shader `pag05-vs.glsl`.
+
+### 3. Controles Interactivos e Interacción con el Ratón
+* **Ventana ImGui (`Camera`):** Selector combo para elegir el tipo de movimiento activo y botones/sliders de control.
+* **Arrastre del Ratón:** Mediante `cursor_position_callback` en GLFW, al hacer clic izquierdo y arrastrar el ratón fuera de los paneles de ImGui, se aplica el movimiento activo a la cámara.
+
+---
+
+## Diagrama de Clases UML Actualizado
 
 ```mermaid
 classDiagram
@@ -77,79 +102,52 @@ classDiagram
         +~Listener()
         +notificarCambioColor(r: float, g: float, b: float, a: float)* void
         +notificarCargarShader(nombreBase: const string&)* void
+        +notificarMovimientoCamara(tipo: TipoMovimiento, delta1: float, delta2: float)* void
+    }
+
+    class Camara {
+        -posicion: vec3
+        -puntoInteres: vec3
+        -up: vec3
+        -fovY: float
+        -aspecto: float
+        -zNear: float
+        -zFar: float
+        +Camara()
+        +getMatrizVision() mat4
+        +getMatrizProyeccion() mat4
+        +establecerAspecto(aspecto: float) void
+        +pan(anguloGrados: float) void
+        +tilt(anguloGrados: float) void
+        +dolly(desplX: float, desplZ: float) void
+        +crane(desplY: float) void
+        +orbitar(deltaLat: float, deltaLon: float) void
+        +zoom(deltaFov: float) void
     }
 
     class ShaderProgram {
-        -idVS: GLuint
-        -idFS: GLuint
         -idSP: GLuint
-        -cargarArchivoTexto(rutaArchivo: const string&) string
-        -comprobarCompilacionShader(shader: GLuint, tipoShader: const string&) void
-        -comprobarEnlazadoProgram(program: GLuint) void
-        -liberarRecursos() void
-        +ShaderProgram()
-        +~ShaderProgram()
-        +cargarDesdeArchivos(nombreBase: const string&) void
+        +setUniformMat4(nombre: const string&, matriz: const mat4&) void
         +activar() const void
-        +estaListo() const bool
-        +getIdProgram() const GLuint
     }
 
     class Renderer {
         -static instance: Renderer*
+        -camara: Camara
         -shaderProgram: ShaderProgram
-        -idVAO: GLuint
-        -idVBO: GLuint
-        -idIBO: GLuint
-        -idVBO_color: GLuint
-        -Renderer()
-        +~Renderer()
         +static getInstance() Renderer&
-        +inicializar() void
         +refrescar() void
-        +establecerViewport(x: int, y: int, width: int, height: int) void
-        +establecerColor(r: float, g: float, b: float, a: float) void
-        +obtenerColor(colorActual: float[4]) void
-        +mostrarInformacionGL() void
-        +notificarCambioColor(r: float, g: float, b: float, a: float) void
-        +notificarCargarShader(nombreBase: const string&) void
-        +creaModelo() void
-        +crearModeloEntrelazado() void
-        +crearModeloNoEntrelazado() void
+        +aplicarMovimientoRaton(deltaX: float, deltaY: float) void
     }
 
     class GUI {
         -static instance: GUI*
-        -mensajes: vector~string~
-        -autoScroll: bool
-        -colorActual: float[4]
-        -nombreShaderBase: string
-        -listeners: vector~Listener*~
-        -GUI()
-        -selectorColorTriangular() void
-        -ventanaShaderProgram() void
-        -consola() void
-        -notificarObservadoresColor() void
-        -notificarObservadoresShader() void
-        +~GUI()
-        +static getInstance() GUI&
-        +inicializar(window: GLFWwindow*) void
-        +render() void
-        +finalizar() void
-        +procesarBotonRaton(button: int, action: int) void
-        +addMensaje(mensaje: const string&) void
-        +addListener(listener: Listener*) void
-        +removeListener(listener: Listener*) void
-    }
-
-    class Main ["main.cpp"] {
-        <<file>>
-        +main() int
+        -tipoMovimientoActivo: TipoMovimiento
+        -ventanaCamara() void
     }
 
     Listener <|.. Renderer : Implementa
-    Renderer "1" *-- "1" ShaderProgram : Contiene / Delega
-    GUI "1" o-- "*" Listener : listeners
-    Main ..> GUI : Utiliza / Inicializa
-    Main ..> Renderer : Utiliza / Inicializa
+    Renderer "1" *-- "1" Camara : Posee
+    Renderer "1" *-- "1" ShaderProgram : Posee
+    GUI "1" o-- "*" Listener : Notifica
 ```
