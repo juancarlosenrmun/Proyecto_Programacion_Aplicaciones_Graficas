@@ -190,6 +190,7 @@ namespace PAG {
 
         selectorColorTriangular();
         ventanaShaderProgram();
+        ventanaCamara();
         consola();
 
         //Renderemos ImGui sobre el viewport de OpenGL
