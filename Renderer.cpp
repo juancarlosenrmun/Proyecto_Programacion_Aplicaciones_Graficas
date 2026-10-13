@@ -71,11 +71,17 @@ namespace PAG {
     void Renderer::refrescar() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // refrescamos el buffer
 
-        glPolygonMode ( GL_FRONT_AND_BACK, GL_FILL );
-        shaderProgram.activar();
-        glBindVertexArray ( idVAO );
-        glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, idIBO );
-        glDrawElements ( GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr );
+        if (shaderProgram.estaListo() && idVAO != 0) {
+            shaderProgram.activar();
+
+            // Enviamos las matrices de la cámara al shader
+            shaderProgram.setUniformMat4("mVis", camara.getMatrizVision());
+            shaderProgram.setUniformMat4("mProy", camara.getMatrizProyeccion());
+
+            glBindVertexArray(idVAO);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        }
 
     }
 
