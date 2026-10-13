@@ -7,6 +7,8 @@
 
 #ifndef PR02_LISTENER_H
 #define PR02_LISTENER_H
+#include "Camara.h"
+
 
 namespace PAG {
     /**
@@ -34,6 +36,8 @@ namespace PAG {
              * @param nombreBase Prefijo de los archivos .glsl.
              */
             virtual void notificarCargarShader(const std::string& nombreBase) {}
+
+            virtual void notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2 = 0.0f) {}
     };
 }
 

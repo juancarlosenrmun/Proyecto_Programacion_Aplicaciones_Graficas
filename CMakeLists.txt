@@ -6,6 +6,7 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 find_package(OpenGL REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
 file( GLOB MY_FILES *.cpp )
 file( GLOB GLAD_FILES GLAD/src/*.c )
@@ -15,8 +16,12 @@ add_executable(${PROJECT_NAME} ${MY_FILES} ${GLAD_FILES} ${IMGUI_FILES}
         Listener.h
         ShaderProgram.cpp
         ShaderProgram.h
-        ImGui/src/imgui_stdlib.cpp)
+        ImGui/src/imgui_stdlib.cpp
+        Camara.cpp
+        Camara.h)
 
 target_include_directories( ${PROJECT_NAME} PUBLIC GLAD/include ImGui/include )
 
-target_link_libraries( ${PROJECT_NAME} OpenGL::GL glfw )
+target_link_libraries( ${PROJECT_NAME} PRIVATE
+        OpenGL::GL glfw
+        glm::glm)

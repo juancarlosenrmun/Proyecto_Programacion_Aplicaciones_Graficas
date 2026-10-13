@@ -71,11 +71,17 @@ namespace PAG {
     void Renderer::refrescar() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // refrescamos el buffer
 
-        glPolygonMode ( GL_FRONT_AND_BACK, GL_FILL );
-        shaderProgram.activar();
-        glBindVertexArray ( idVAO );
-        glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, idIBO );
-        glDrawElements ( GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr );
+        if (shaderProgram.estaListo() && idVAO != 0) {
+            shaderProgram.activar();
+
+            // Enviamos las matrices de la cámara al shader
+            shaderProgram.setUniformMat4("mVis", camara.getMatrizVision());
+            shaderProgram.setUniformMat4("mProy", camara.getMatrizProyeccion());
+
+            glBindVertexArray(idVAO);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        }
 
     }
 
@@ -88,6 +94,9 @@ namespace PAG {
      */
     void Renderer::establecerViewport(int x, int y, int width, int height) {
         glViewport(x, y, width, height);
+        if (height > 0) {
+            camara.establecerAspecto(static_cast<float>(width) / static_cast<float>(height));
+        }
     }
 
     /**
@@ -135,6 +144,20 @@ namespace PAG {
             GUI::getInstance().addMensaje("Shader Program '" + nombreBase + "' cargado con éxito.");
         } catch (const std::exception& e) {
             GUI::getInstance().addMensaje(e.what());
+        }
+    }
+
+    void Renderer::notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) {
+
+        movimientoActivo = tipo;
+
+        switch (tipo) {
+            case TipoMovimiento::PAN:   camara.pan(delta1); break;
+            case TipoMovimiento::TILT:  camara.tilt(delta1); break;
+            case TipoMovimiento::DOLLY: camara.dolly(delta1, delta2); break;
+            case TipoMovimiento::CRANE: camara.crane(delta1); break;
+            case TipoMovimiento::ORBIT: camara.orbitar(delta1, delta2); break;
+            case TipoMovimiento::ZOOM:  camara.zoom(delta1); break;
         }
     }
 
@@ -231,5 +254,39 @@ namespace PAG {
         glGenBuffers(1, &idIBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    }
+
+    void Renderer::aplicarMovimientoRaton(float deltaX, float deltaY) {
+        switch (movimientoActivo) {
+            case TipoMovimiento::PAN:
+                // Arrastrar en X rota la cámara en horizontal (Pan)
+                camara.pan(-deltaX * sensibilidadRaton);
+                break;
+
+            case TipoMovimiento::TILT:
+                // Arrastrar en Y rota la cámara en vertical (Tilt)
+                camara.tilt(-deltaY * sensibilidadRaton);
+                break;
+
+            case TipoMovimiento::DOLLY:
+                // Arrastrar en X/Y traslada la cámara en el plano local
+                camara.dolly(deltaX * 0.01f, deltaY * 0.01f);
+                break;
+
+            case TipoMovimiento::CRANE:
+                // Arrastrar en Y sube o baja la cámara en el eje Y global
+                camara.crane(-deltaY * 0.01f);
+                break;
+
+            case TipoMovimiento::ORBIT:
+                // Arrastrar en Y cambia la latitud, arrastrar en X cambia la longitud
+                camara.orbitar(-deltaY * sensibilidadRaton, -deltaX * sensibilidadRaton);
+                break;
+
+            case TipoMovimiento::ZOOM:
+                // Arrastrar en Y aumenta o disminuye el FOV
+                camara.zoom(deltaY * sensibilidadRaton);
+                break;
+        }
     }
 }

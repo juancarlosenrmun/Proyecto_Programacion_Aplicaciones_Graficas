@@ -12,6 +12,7 @@
 #include<stdexcept>
 #include "Listener.h"
 #include "ShaderProgram.h"
+#include "Camara.h"
 
 namespace PAG
 {
@@ -23,6 +24,10 @@ namespace PAG
     {
         private:
             static Renderer* instance; ///< Puntero al objeto
+
+            Camara camara;
+            TipoMovimiento movimientoActivo = TipoMovimiento::PAN; // Movimiento por defecto
+            float sensibilidadRaton = 0.5f;
 
             ShaderProgram shaderProgram;
 
@@ -52,10 +57,13 @@ namespace PAG
 
             void notificarCambioColor(float r, float g, float b, float a) override;
             void notificarCargarShader(const std::string &nombreBase) override;
+            void notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2 = 0.0f) override;
 
             void creaModelo();
             void crearModeloNoEntrelazado();
             void crearModeloEntrelazado();
+
+            void aplicarMovimientoRaton(float deltaX, float deltaY);
     };
 
 };

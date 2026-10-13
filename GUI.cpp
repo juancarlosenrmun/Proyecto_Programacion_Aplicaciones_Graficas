@@ -116,6 +116,69 @@ namespace PAG {
         ImGui::End();
     }
 
+    void GUI::ventanaCamara() {
+        ImGui::SetNextWindowPos(ImVec2(600, 450), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(360, 180), ImGuiCond_Once);
+
+        if (ImGui::Begin("Camera")) {
+            static int itemActual = 0;
+            const char* movimientos[] = { "Zoom", "Pan", "Tilt", "Dolly", "Crane", "Orbit" };
+
+            ImGui::Text("Movement");
+            if (ImGui::Combo("##MovimientoCombo", &itemActual, movimientos, IM_ARRAYSIZE(movimientos))) {
+                tipoMovimientoActivo = static_cast<TipoMovimiento>(itemActual);
+            }
+
+            ImGui::Separator();
+
+            switch (tipoMovimientoActivo) {
+                case TipoMovimiento::ZOOM: {
+                    static float fov = 45.0f;
+                    if (ImGui::SliderFloat("Angle", &fov, 1.0f, 120.0f)) {
+                        notificarObservadoresMovimientoCamara(TipoMovimiento::ZOOM, fov - fovAnterior);
+                        fovAnterior = fov;
+                    }
+                    break;
+                }
+                case TipoMovimiento::PAN:
+                    if (ImGui::Button("<- Left"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::PAN,  2.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Right ->")) { notificarObservadoresMovimientoCamara(TipoMovimiento::PAN, -2.0f); }
+                    break;
+
+                case TipoMovimiento::TILT:
+                    if (ImGui::Button("^ Up ^"))    { notificarObservadoresMovimientoCamara(TipoMovimiento::TILT,  2.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("v Down v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::TILT, -2.0f); }
+                    break;
+
+                case TipoMovimiento::DOLLY:
+                    if (ImGui::Button("<- Left"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, -0.1f, 0.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Right ->")) { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY,  0.1f, 0.0f); }
+                    if (ImGui::Button("^ Front ^")) { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, 0.0f, -0.1f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("v Back v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, 0.0f,  0.1f); }
+                    break;
+
+                case TipoMovimiento::CRANE:
+                    if (ImGui::Button("^ Up ^"))    { notificarObservadoresMovimientoCamara(TipoMovimiento::CRANE,  0.1f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("v Down v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::CRANE, -0.1f); }
+                    break;
+
+                case TipoMovimiento::ORBIT:
+                    if (ImGui::Button("North")) { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT,  2.0f, 0.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("South")) { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, -2.0f, 0.0f); }
+                    if (ImGui::Button("West"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, 0.0f,  2.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("East"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, 0.0f, -2.0f); }
+                    break;
+            }
+        }
+        ImGui::End();
+}
     /**
      * @brief Genera y dibuja los controles de la interfaz en el fotograma actual.
      */
@@ -127,6 +190,7 @@ namespace PAG {
 
         selectorColorTriangular();
         ventanaShaderProgram();
+        ventanaCamara();
         consola();
 
         //Renderemos ImGui sobre el viewport de OpenGL
@@ -199,6 +263,12 @@ namespace PAG {
     void GUI::notificarObservadoresShader() {
         for (auto* listener : listeners) {
             listener->notificarCargarShader(nombreShaderBase);
+        }
+    }
+
+    void GUI::notificarObservadoresMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) {
+        for (auto* listener : listeners) {
+            listener->notificarMovimientoCamara(tipo, delta1, delta2);
         }
     }
 }

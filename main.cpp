@@ -7,6 +7,10 @@
 #include "Renderer.h"
 #include "GUI.h"
 
+
+bool botonIzquierdoPulsado = false;
+double xPosAnterior = 0.0, yPosAnterior = 0.0;
+
 // - Esta función callback será llamada cuando GLFW produzca algún error
 void error_callback ( int errno, const char* desc )
 {
@@ -51,19 +55,31 @@ void key_callback ( GLFWwindow *window, int key, int scancode, int action, int m
 
 // - Esta función callback será llamada cada vez que se pulse algún botón
 // del ratón sobre el área de dibujo OpenGL.
-void mouse_button_callback ( GLFWwindow *window, int button, int action, int mods )
-{
-    if ( action == GLFW_PRESS )
-    {
-        PAG::GUI::getInstance().addMensaje("Pulsado el boton:" + std::to_string(button));
+void mouse_button_callback ( GLFWwindow *window, int button, int action, int mods ) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            botonIzquierdoPulsado = true;
+            glfwGetCursorPos(window, &xPosAnterior, &yPosAnterior);
+        } else if (action == GLFW_RELEASE) {
+            botonIzquierdoPulsado = false;
+        }
     }
-    else if ( action == GLFW_RELEASE )
-    {
-        PAG::GUI::getInstance().addMensaje("Soltando el boton:" + std::to_string(button));
-    }
-
-    // Notificamo del evento a GUI
     PAG::GUI::getInstance().procesarBotonRaton(button, action);
+}
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    // Si la interfaz de ImGui está capturando el ratón, ignoramos el arrastre sobre la escena
+    if (ImGui::GetIO().WantCaptureMouse) return;
+
+    if (botonIzquierdoPulsado) {
+        float deltaX = static_cast<float>(xpos - xPosAnterior);
+        float deltaY = static_cast<float>(ypos - yPosAnterior);
+
+        PAG::Renderer::getInstance().aplicarMovimientoRaton(deltaX, deltaY);
+
+        xPosAnterior = xpos;
+        yPosAnterior = ypos;
+    }
 }
 
 // - Esta función callback será llamada cada vez que se mueva la rueda
@@ -166,6 +182,7 @@ int main()
     glfwSetKeyCallback ( window, key_callback );
     glfwSetMouseButtonCallback ( window, mouse_button_callback );
     glfwSetScrollCallback ( window, scroll_callback );
+    glfwSetCursorPosCallback ( window, cursor_position_callback );
 
     // Inicializamos la clase GUI pasando el puntero a la ventana GLFW
     PAG::GUI::getInstance().inicializar(window);
