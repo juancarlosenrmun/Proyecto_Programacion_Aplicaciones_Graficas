@@ -79,4 +79,8 @@ namespace PAG {
 
           posicion = puntoInteres + dir;
      }
+
+     void Camara::zoom(float deltaFovGrados) {
+          fovY = std::clamp(fovY + deltaFovGrados, 1.0f, 120.0f);
+     }
 }
