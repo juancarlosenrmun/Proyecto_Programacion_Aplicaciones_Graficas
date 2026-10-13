@@ -35,7 +35,7 @@ void framebuffer_size_callback ( GLFWwindow *window, int width, int height )
 {
     //glViewport ( 0, 0, width, height );
     PAG::Renderer::getInstance().establecerViewport(0,0,width,height);
-    PAG::GUI::getInstance().addMensaje("Resize callback called");
+    //PAG::GUI::getInstance().addMensaje("Resize callback called");
 }
 
 // - Esta función callback será llamada cada vez que se pulse una tecla
@@ -46,7 +46,7 @@ void key_callback ( GLFWwindow *window, int key, int scancode, int action, int m
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
-    PAG::GUI::getInstance().addMensaje("Key callback called");
+    //PAG::GUI::getInstance().addMensaje("Key callback called");
 }
 
 // - Esta función callback será llamada cada vez que se pulse algún botón
@@ -113,7 +113,7 @@ void scroll_callback ( GLFWwindow *window, double xoffset, double yoffset )
 
 int main()
 {
-    std::cout << "Starting Application PAG - Prueba 02" << std::endl;
+    std::cout << "Starting Application PAG" << std::endl;
 
     // - Este callback hay que registrarlo ANTES de llamar a glfwInit
     glfwSetErrorCallback ( (GLFWerrorfun) error_callback );
@@ -160,23 +160,23 @@ int main()
         return -3;
     }
 
+    // - Registramos los callbacks que responderán a los eventos principales
+    glfwSetWindowRefreshCallback ( window, window_refresh_callback );
+    glfwSetFramebufferSizeCallback ( window, framebuffer_size_callback );
+    glfwSetKeyCallback ( window, key_callback );
+    glfwSetMouseButtonCallback ( window, mouse_button_callback );
+    glfwSetScrollCallback ( window, scroll_callback );
+
     // Inicializamos la clase GUI pasando el puntero a la ventana GLFW
     PAG::GUI::getInstance().inicializar(window);
     try
     {
         PAG::Renderer::getInstance().inicializar();
 
-        // - Registramos los callbacks que responderán a los eventos principales
-        glfwSetWindowRefreshCallback ( window, window_refresh_callback );
-        glfwSetFramebufferSizeCallback ( window, framebuffer_size_callback );
-        glfwSetKeyCallback ( window, key_callback );
-        glfwSetMouseButtonCallback ( window, mouse_button_callback );
-        glfwSetScrollCallback ( window, scroll_callback );
-
         PAG::Renderer::getInstance().mostrarInformacionGL();
 
-        PAG::Renderer::getInstance().creaShaderProgram ("../pag03");
         PAG::Renderer::getInstance().creaModelo ();
+        //PAG::Renderer::getInstance().notificarCargarShader("../pag04");
 
         PAG::GUI::getInstance().addMensaje("Shader y modelo cargados con exito");
     }catch (std::exception &e)

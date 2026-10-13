@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <imgui_stdlib.h>
 #include <string>
 #include <vector>
 #include <GLFW/glfw3.h>
@@ -31,13 +32,18 @@ namespace PAG {
 
             float colorActual[4] = {0.6f, 0.6f, 0.6f, 1.0f}; ///< Estado local del color de fondo.
 
+            // Campo para el nombre base del shader
+            std::string nombreShaderBase = "pag04";
+
             // Ventanas
             void selectorColorTriangular();
             void consola();
+            void ventanaShaderProgram();
 
             // Notificar observadores
             std::vector<Listener*> listeners;  ///< Lista de observadores suscritos a los eventos de la GUI.
             void notificarObservadoresColor();
+            void notificarObservadoresShader();
         public:
             virtual ~GUI();
             static GUI& getInstance();

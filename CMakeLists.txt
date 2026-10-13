@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Pr03)
+project(Proyecto_PAG)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
@@ -12,7 +12,10 @@ file( GLOB GLAD_FILES GLAD/src/*.c )
 file( GLOB IMGUI_FILES ImGui/src/*.cpp )
 
 add_executable(${PROJECT_NAME} ${MY_FILES} ${GLAD_FILES} ${IMGUI_FILES}
-        Listener.h)
+        Listener.h
+        ShaderProgram.cpp
+        ShaderProgram.h
+        ImGui/src/imgui_stdlib.cpp)
 
 target_include_directories( ${PROJECT_NAME} PUBLIC GLAD/include ImGui/include )
 
