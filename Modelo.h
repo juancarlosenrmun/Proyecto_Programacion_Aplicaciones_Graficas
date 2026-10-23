@@ -42,6 +42,16 @@ namespace PAG {
             Modelo& operator=(const Modelo&) = delete;
 
             void dibujar(const ShaderProgram& shader);
+
+        // Getters / Setters de transformación
+            const std::string& getNombre() const { return nombre; }
+            glm::vec3 getPosicion() const { return posicion; }
+            glm::vec3 getRotacion() const { return rotacion; }
+            glm::vec3 getEscala() const { return escala; }
+
+            void setPosicion(const glm::vec3& pos) { posicion = pos; }
+            void setRotacion(const glm::vec3& rot) { rotacion = rot; }
+            void setEscala(const glm::vec3& esc)   { escala = esc; }
     };
 }
 
