@@ -35,6 +35,10 @@ namespace PAG {
         public:
             Modelo(const std::string& rutaArchivo);
             ~Modelo();
+
+            // Deshabilitar copia del mismo modelo
+            Modelo(const Modelo&) = delete;
+            Modelo& operator=(const Modelo&) = delete;
     };
 }
 
