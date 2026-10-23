@@ -72,9 +72,9 @@ namespace PAG
             void notificarCargarShader(const std::string &nombreBase) override;
             void notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2 = 0.0f) override;
 
-            void creaModelo();
-            void crearModeloNoEntrelazado();
-            void crearModeloEntrelazado();
+            void notificarCargarModelo(const std::string& rutaArchivo) override;
+            void notificarEliminarModelo(int indice) override;
+            void notificarTransformarModelo(int indice, glm::vec3 pos, glm::vec3 rot, glm::vec3 esc) override;
 
             void aplicarMovimientoRaton(float deltaX, float deltaY);
     };

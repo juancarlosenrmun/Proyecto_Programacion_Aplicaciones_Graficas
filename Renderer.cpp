@@ -161,99 +161,34 @@ namespace PAG {
         }
     }
 
-    /**
-     * @brief Método para crear el VAO del triángulo con atributos de posición y color.
-     */
-    void PAG::Renderer::creaModelo ( )
-    {
-        crearModeloEntrelazado();
-        //crearModeloNoEntrelazado();
+    void Renderer::notificarCargarModelo(const std::string& rutaArchivo) {
+        try {
+            auto nuevoModelo = std::make_unique<Modelo>(rutaArchivo);
+
+            // Asignar una posición ligeramente aleatoria/desplazada para no solapar los modelos
+            float offset = static_cast<float>(modelos.size()) * 1.5f;
+            nuevoModelo->setPosicion(glm::vec3(offset, 0.0f, 0.0f));
+
+            modelos.push_back(std::move(nuevoModelo));
+            GUI::getInstance().addMensaje("Modelo cargado con éxito: " + rutaArchivo);
+        } catch (const std::exception& e) {
+            GUI::getInstance().addMensaje(e.what());
+        }
     }
 
-    /**
-     * @brief Generar el modelo con VBOs no entrelazados.
-     */
-    void Renderer::crearModeloNoEntrelazado() {
-
-        GLuint indices[] = { 0, 1, 2 };
-
-        //Determinamos la posicion de los vértices
-        GLfloat posiciones[] = {
-            -.5f, -.5f, 0.0f,  // Vértice 0 (Esq. inferior izquierda)
-             .5f, -.5f, 0.0f,  // Vértice 1 (Esq. inferior derecha)
-             .0f,  .5f, 0.0f   // Vértice 2 (Superior centro)
-        };
-
-        //Determinamos el color de los vértices
-        GLfloat colores[] = {
-            1.0f, 0.0f, 0.0f,  // Vértice 0: Rojo
-            0.0f, 1.0f, 0.0f,  // Vértice 1: Verde
-            0.0f, 0.0f, 1.0f   // Vértice 2: Azul
-        };
-
-        //Genera un identificador único
-        glGenVertexArrays(1, &idVAO);
-        //Activa el VAO
-        glBindVertexArray(idVAO);
-
-        //VBO 1: Posiciones (Location 0)
-        glGenBuffers(1, &idVBO); //Crea un buffer en la memoria de la GPU
-        glBindBuffer(GL_ARRAY_BUFFER, idVBO); //Enlaza el idVBO con el con el buffer activo
-        glBufferData(GL_ARRAY_BUFFER, sizeof(posiciones), posiciones, GL_STATIC_DRAW); //Asigna memoria a la GPU
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr); //Definimos como interpreta GPU el eespacio de memoria anterior
-        glEnableVertexAttribArray(0); //Habilita el atributo 0
-
-        //VBO 2: Colores (Location 1)
-        //Repetimos el mismo procedimiento pero cambiando el array y el index
-        glGenBuffers(1, &idVBO_color);
-        glBindBuffer(GL_ARRAY_BUFFER, idVBO_color);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(colores), colores, GL_STATIC_DRAW);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), nullptr);
-        glEnableVertexAttribArray(1);
-
-        // IBO: Índices
-        glGenBuffers(1, &idIBO); //Buffer de indices
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO); //Enlazamos el buffer
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // Copiamos la secuencia de renderizado
+    void Renderer::notificarEliminarModelo(int indice) {
+        if (indice >= 0 && indice < static_cast<int>(modelos.size())) {
+            GUI::getInstance().addMensaje("Modelo eliminado: " + modelos[indice]->getNombre());
+            modelos.erase(modelos.begin() + indice);
+        }
     }
 
-    /**
-     * @brief Generar el modelo con VBOs entrelazados.
-     */
-    void Renderer::crearModeloEntrelazado() {
-
-        GLuint indices[] = { 0, 1, 2 };
-
-        struct Vertice {
-            GLfloat x, y, z; // Atributo 0: Posición
-            GLfloat r, g, b; // Atributo 1: Color
-        };
-
-        Vertice vertices[] = {
-            { -.5f, -.5f, 0.0f,   1.0f, 0.0f, 0.0f }, // Vértice 0: Rojo
-            {  .5f, -.5f, 0.0f,   0.0f, 1.0f, 0.0f }, // Vértice 1: Verde
-            {  .0f,  .5f, 0.0f,   0.0f, 0.0f, 1.0f }  // Vértice 2: Azul
-        };
-
-        glGenVertexArrays(1, &idVAO); //Generamos y vinculamos
-        glBindVertexArray(idVAO);
-
-        glGenBuffers(1, &idVBO); //Generamos un unico buffer
-        glBindBuffer(GL_ARRAY_BUFFER, idVBO); //Lo vinculamos a dicho buffer
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //Le pasamos la informacion completa
-
-        //Definimos la pposición en memoria del atributo, este caso de la posición
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, x));
-        glEnableVertexAttribArray(0);
-
-        //Definimos la pposición en memoria del atributo, este caso del color
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, r));
-        glEnableVertexAttribArray(1);
-
-        //IBO
-        glGenBuffers(1, &idIBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    void Renderer::notificarTransformarModelo(int indice, glm::vec3 pos, glm::vec3 rot, glm::vec3 esc) {
+        if (indice >= 0 && indice < static_cast<int>(modelos.size())) {
+            modelos[indice]->setPosicion(pos);
+            modelos[indice]->setRotacion(rot);
+            modelos[indice]->setEscala(esc);
+        }
     }
 
     void Renderer::aplicarMovimientoRaton(float deltaX, float deltaY) {
