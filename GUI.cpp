@@ -119,83 +119,156 @@ namespace PAG {
     }
 
     void GUI::ventanaCamara() {
-    ImGui::SetNextWindowPos(ImVec2(850, 360), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(320, 200), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(850, 360), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(320, 200), ImGuiCond_Once);
 
-    if (ImGui::Begin("Camera")) {
-        static int itemActual = 0;
+        if (ImGui::Begin("Camera")) {
+            static int itemActual = 0;
 
-        const char* movimientos[] = { "Pan", "Tilt", "Dolly", "Crane", "Orbit", "Zoom" };
+            const char* movimientos[] = { "Pan", "Tilt", "Dolly", "Crane", "Orbit", "Zoom" };
 
-        ImGui::Text("Movement");
-        if (ImGui::Combo("##MovementCombo", &itemActual, movimientos, IM_ARRAYSIZE(movimientos))) {
-            tipoMovimientoActivo = static_cast<TipoMovimiento>(itemActual);
-            notificarObservadoresMovimientoCamara(tipoMovimientoActivo, 0.0f, 0.0f);
-        }
-
-        ImGui::Separator();
-
-        switch (tipoMovimientoActivo) {
-            case TipoMovimiento::ZOOM: {
-                static float fov = 45.0f;
-                ImGui::Text("Angle");
-                if (ImGui::SliderFloat("##AngleSlider", &fov, 1.0f, 120.0f, "%.0f")) {
-                    float deltaFov = fov - fovAnterior;
-                    notificarObservadoresMovimientoCamara(TipoMovimiento::ZOOM, deltaFov);
-                    fovAnterior = fov;
-                }
-                break;
+            ImGui::Text("Movement");
+            if (ImGui::Combo("##MovementCombo", &itemActual, movimientos, IM_ARRAYSIZE(movimientos))) {
+                tipoMovimientoActivo = static_cast<TipoMovimiento>(itemActual);
+                notificarObservadoresMovimientoCamara(tipoMovimientoActivo, 0.0f, 0.0f);
             }
-            case TipoMovimiento::PAN:
-                ImGui::Text("Direction");
-                if (ImGui::Button("<- Left"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::PAN,  2.0f); }
-                ImGui::SameLine();
-                if (ImGui::Button("Right ->")) { notificarObservadoresMovimientoCamara(TipoMovimiento::PAN, -2.0f); }
-                break;
 
-            case TipoMovimiento::TILT:
-                ImGui::Text("Direction");
-                if (ImGui::Button("^ Up ^"))    { notificarObservadoresMovimientoCamara(TipoMovimiento::TILT,  2.0f); }
-                ImGui::SameLine();
-                if (ImGui::Button("v Down v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::TILT, -2.0f); }
-                break;
+            ImGui::Separator();
 
-            case TipoMovimiento::DOLLY:
-                ImGui::Text("Direction");
-                // Disposición en cruz identica a la Figura 1
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 45.0f);
-                if (ImGui::Button("^ Front ^")) { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, 0.0f, -0.1f); }
+            switch (tipoMovimientoActivo) {
+                case TipoMovimiento::ZOOM: {
+                    static float fov = 45.0f;
+                    ImGui::Text("Angle");
+                    if (ImGui::SliderFloat("##AngleSlider", &fov, 1.0f, 120.0f, "%.0f")) {
+                        float deltaFov = fov - fovAnterior;
+                        notificarObservadoresMovimientoCamara(TipoMovimiento::ZOOM, deltaFov);
+                        fovAnterior = fov;
+                    }
+                    break;
+                }
+                case TipoMovimiento::PAN:
+                    ImGui::Text("Direction");
+                    if (ImGui::Button("<- Left"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::PAN,  2.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Right ->")) { notificarObservadoresMovimientoCamara(TipoMovimiento::PAN, -2.0f); }
+                    break;
 
-                if (ImGui::Button("<- Left"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, -0.1f, 0.0f); }
-                ImGui::SameLine();
-                if (ImGui::Button("Right ->")) { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY,  0.1f, 0.0f); }
+                case TipoMovimiento::TILT:
+                    ImGui::Text("Direction");
+                    if (ImGui::Button("^ Up ^"))    { notificarObservadoresMovimientoCamara(TipoMovimiento::TILT,  2.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("v Down v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::TILT, -2.0f); }
+                    break;
 
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 45.0f);
-                if (ImGui::Button("v Back v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, 0.0f,  0.1f); }
-                break;
+                case TipoMovimiento::DOLLY:
+                    ImGui::Text("Direction");
+                    // Disposición en cruz identica a la Figura 1
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 45.0f);
+                    if (ImGui::Button("^ Front ^")) { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, 0.0f, -0.1f); }
 
-            case TipoMovimiento::CRANE:
-                ImGui::Text("Direction");
-                if (ImGui::Button("^ Up ^"))    { notificarObservadoresMovimientoCamara(TipoMovimiento::CRANE,  0.1f); }
-                ImGui::SameLine();
-                if (ImGui::Button("v Down v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::CRANE, -0.1f); }
-                break;
+                    if (ImGui::Button("<- Left"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, -0.1f, 0.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Right ->")) { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY,  0.1f, 0.0f); }
 
-            case TipoMovimiento::ORBIT:
-                ImGui::Text("Latitude");
-                if (ImGui::Button("^ Up ^")) { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT,  2.0f, 0.0f); }
-                ImGui::SameLine();
-                if (ImGui::Button("v Down v")) { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, -2.0f, 0.0f); }
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 45.0f);
+                    if (ImGui::Button("v Back v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, 0.0f,  0.1f); }
+                    break;
 
-                ImGui::Text("Longitude");
-                if (ImGui::Button("<- Left"))   { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, 0.0f,  2.0f); }
-                ImGui::SameLine();
-                if (ImGui::Button("Right ->"))   { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, 0.0f, -2.0f); }
-                break;
+                case TipoMovimiento::CRANE:
+                    ImGui::Text("Direction");
+                    if (ImGui::Button("^ Up ^"))    { notificarObservadoresMovimientoCamara(TipoMovimiento::CRANE,  0.1f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("v Down v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::CRANE, -0.1f); }
+                    break;
+
+                case TipoMovimiento::ORBIT:
+                    ImGui::Text("Latitude");
+                    if (ImGui::Button("^ Up ^")) { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT,  2.0f, 0.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("v Down v")) { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, -2.0f, 0.0f); }
+
+                    ImGui::Text("Longitude");
+                    if (ImGui::Button("<- Left"))   { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, 0.0f,  2.0f); }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Right ->"))   { notificarObservadoresMovimientoCamara(TipoMovimiento::ORBIT, 0.0f, -2.0f); }
+                    break;
+            }
         }
+        ImGui::End();
     }
-    ImGui::End();
-}
+
+    void GUI::ventanaModelos() {
+        ImGui::SetNextWindowPos(ImVec2(380, 10), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(340, 320), ImGuiCond_Once);
+
+        if (ImGui::Begin("Gestor de Modelos")) {
+            // Opción para alternar entre Malla de Alambre y Sólido
+            bool alambre = Renderer::getInstance().isModoAlambre();
+            if (ImGui::Checkbox("Modo Alambre (Wireframe)", &alambre)) {
+                Renderer::getInstance().setModoAlambre(alambre);
+            }
+
+            ImGui::Separator();
+            ImGui::Text("Cargar Modelo OBJ");
+
+            static std::string rutaModelo = "../modelos/triangulo.obj";
+            ImGui::InputText("Ruta ##RutaOBJ", &rutaModelo);
+            if (ImGui::Button("Cargar OBJ")) {
+                for (auto* listener : listeners) {
+                    listener->notificarCargarModelo(rutaModelo);
+                }
+            }
+
+            ImGui::Separator();
+            ImGui::Text("Modelos en la Escena");
+
+            const auto& modelos = Renderer::getInstance().getModelos();
+            static int seleccionado = 0;
+
+            if (modelos.empty()) {
+                ImGui::TextDisabled("No hay modelos cargados.");
+            } else {
+                if (seleccionado >= static_cast<int>(modelos.size())) {
+                    seleccionado = 0;
+                }
+
+                if (ImGui::BeginCombo("##ListaModelos", modelos[seleccionado]->getNombre().c_str())) {
+                    for (int i = 0; i < static_cast<int>(modelos.size()); ++i) {
+                        bool isSelected = (seleccionado == i);
+                        if (ImGui::Selectable(modelos[i]->getNombre().c_str(), isSelected)) {
+                            seleccionado = i;
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+
+                // Controles de Transformación de Modelado (M)
+                auto& mod = modelos[seleccionado];
+                glm::vec3 pos = mod->getPosicion();
+                glm::vec3 rot = mod->getRotacion();
+                glm::vec3 esc = mod->getEscala();
+
+                bool modificado = false;
+                modificado |= ImGui::DragFloat3("Posicion", &pos.x, 0.05f);
+                modificado |= ImGui::DragFloat3("Rotacion", &rot.x, 1.0f);
+                modificado |= ImGui::DragFloat3("Escala",   &esc.x, 0.05f, 0.01f, 10.0f);
+
+                if (modificado) {
+                    for (auto* listener : listeners) {
+                        listener->notificarTransformarModelo(seleccionado, pos, rot, esc);
+                    }
+                }
+
+                ImGui::Spacing();
+                if (ImGui::Button("Eliminar Modelo Seleccionado")) {
+                    for (auto* listener : listeners) {
+                        listener->notificarEliminarModelo(seleccionado);
+                    }
+                }
+            }
+        }
+        ImGui::End();
+    }
 
     /**
      * @brief Genera y dibuja los controles de la interfaz en el fotograma actual.
@@ -210,6 +283,7 @@ namespace PAG {
         ventanaShaderProgram();
         ventanaCamara();
         consola();
+        ventanaModelos();
 
         //Renderemos ImGui sobre el viewport de OpenGL
         ImGui::Render();
