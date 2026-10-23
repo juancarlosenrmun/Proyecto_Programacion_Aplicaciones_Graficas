@@ -38,6 +38,11 @@ namespace PAG {
             virtual void notificarCargarShader(const std::string& nombreBase) {}
 
             virtual void notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2 = 0.0f) {}
+
+            virtual void notificarCargarModelo(const std::string& rutaArchivo) = 0;
+            virtual void notificarEliminarModelo(int indice) = 0;
+            virtual void notificarTransformarModelo(int indice, glm::vec3 pos, glm::vec3 rot, glm::vec3 esc) = 0;
+    };
     };
 }
 
