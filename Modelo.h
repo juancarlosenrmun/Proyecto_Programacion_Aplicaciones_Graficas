@@ -32,6 +32,7 @@ namespace PAG {
             glm::vec3 rotacion = glm::vec3(0.0f); // Ángulos en grados (X, Y, Z)
             glm::vec3 escala   = glm::vec3(1.0f);
 
+            void crearBuffers(const std::vector<Vertice>& vertices, const std::vector<GLuint>& indices);
         public:
             Modelo(const std::string& rutaArchivo);
             ~Modelo();
@@ -39,6 +40,8 @@ namespace PAG {
             // Deshabilitar copia del mismo modelo
             Modelo(const Modelo&) = delete;
             Modelo& operator=(const Modelo&) = delete;
+
+            void dibujar(const ShaderProgram& shader);
     };
 }
 
