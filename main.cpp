@@ -154,7 +154,7 @@ int main()
     GLFWwindow *window;
     // - Tamaño, título de la ventana, en ventana y no en pantalla completa,
     // sin compartir recursos con otras ventanas.
-    window = glfwCreateWindow ( 1024, 576, "PAG Introduction", nullptr, nullptr );
+    window = glfwCreateWindow ( 1280, 720, "PAG Project", nullptr, nullptr );
     // - Comprobamos si la creación de la ventana ha tenido éxito.
     if ( window == nullptr )
     {
