@@ -66,7 +66,7 @@ En esta práctica se ha completado el desacoplamiento de la compilación y enlaz
 
 ---
 
-## Práctica 05: La Cámara Virtual
+## Versión 05: La Cámara Virtual
 
 En esta práctica se ha añadido soporte completo para una cámara virtual 3D utilizando la biblioteca **GLM** (*OpenGL Mathematics*).
 
@@ -93,7 +93,7 @@ En esta práctica se ha añadido soporte completo para una cámara virtual 3D ut
 
 ---
 
-## Práctica 06: Modelos
+## Versión 06: Modelos
 
 En esta práctica se desacopla la gestión geométrica del renderizador (`PAG::Renderer`), introduciendo la clase `PAG::Modelo` para importar archivos OBJ e instanciar múltiples modelos en la escena.
 
