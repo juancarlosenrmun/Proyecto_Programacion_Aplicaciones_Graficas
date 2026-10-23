@@ -1,56 +1,49 @@
 //
 // Created by Juank on 23/10/2026.
 //
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
 #include "Modelo.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <stdexcept>
 
 namespace PAG {
 
     Modelo::Modelo(const std::string& rutaArchivo) {
-        // Extraer el nombre del archivo para la GUI
         size_t posSlash = rutaArchivo.find_last_of("/\\");
         nombre = (posSlash != std::string::npos) ? rutaArchivo.substr(posSlash + 1) : rutaArchivo;
 
-        Assimp::Importer importador;
-        const aiScene* escena = importador.ReadFile(
-            rutaArchivo,
-            aiProcess_JoinIdenticalVertices |
-            aiProcess_Triangulate |
-            aiProcess_GenSmoothNormals
-        );
+        tinyobj::attrib_t attrib;
+        std::vector<tinyobj::shape_t> shapes;
+        std::vector<tinyobj::material_t> materials;
+        std::string warn, err;
 
-        if (!escena || escena->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !escena->mRootNode) {
-            throw std::runtime_error("Error al cargar modelo con Assimp: " + std::string(importador.GetErrorString()));
+        // Carga del archivo OBJ
+        bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, rutaArchivo.c_str());
+
+        if (!ret) {
+            throw std::runtime_error("Error al cargar OBJ: " + err + warn);
         }
 
         std::vector<Vertice> verticesTotales;
         std::vector<GLuint> indicesTotales;
-        unsigned int desplazamientoVertices = 0;
+        GLuint idx = 0;
 
-        // Recorremos todas las mallas de la escena importada para unificarlas en un único VAO
-        for (unsigned int m = 0; m < escena->mNumMeshes; ++m) {
-            aiMesh* malla = escena->mMeshes[m];
-
-            for (unsigned int i = 0; i < malla->mNumVertices; ++i) {
+        // Recorremos todas las formas (shapes) del modelo
+        for (const auto& shape : shapes) {
+            for (const auto& index : shape.mesh.indices) {
                 Vertice vert;
-                vert.posicion = glm::vec3(malla->mVertices[i].x, malla->mVertices[i].y, malla->mVertices[i].z);
+                vert.posicion = glm::vec3(
+                    attrib.vertices[3 * index.vertex_index + 0],
+                    attrib.vertices[3 * index.vertex_index + 1],
+                    attrib.vertices[3 * index.vertex_index + 2]
+                );
 
-                // Asignamos un color basado en la posición o normales si no hay materiales
+                // Color gris por defecto
                 vert.color = glm::vec3(0.7f, 0.7f, 0.7f);
+
                 verticesTotales.push_back(vert);
+                indicesTotales.push_back(idx++);
             }
-
-            for (unsigned int f = 0; f < malla->mNumFaces; ++f) {
-                aiFace cara = malla->mFaces[f];
-                for (unsigned int j = 0; j < cara.mNumIndices; ++j) {
-                    indicesTotales.push_back(desplazamientoVertices + cara.mIndices[j]);
-                }
-            }
-
-            desplazamientoVertices += malla->mNumVertices;
         }
 
         crearBuffers(verticesTotales, indicesTotales);
