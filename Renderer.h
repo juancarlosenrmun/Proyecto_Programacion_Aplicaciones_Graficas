@@ -8,11 +8,18 @@
  */
 #ifndef PR02_RENDERER_H
 #define PR02_RENDERER_H
-#include<string>
+
+#include <string>
+#include <vector>
+#include <memory>
+#include <stdexcept>
+#include <glm/glm.hpp>
+
 #include<stdexcept>
 #include "Listener.h"
 #include "ShaderProgram.h"
 #include "Camara.h"
+#include "Modelo.h"
 
 namespace PAG
 {
@@ -31,11 +38,9 @@ namespace PAG
 
             ShaderProgram shaderProgram;
 
-            GLuint idVAO = 0; ///<  Identificador del vertex array object
-            GLuint idVBO = 0; ///<  Identificador del vertex buffer object
-            GLuint idIBO = 0; ///<  Identificador del index buffer object
-
-            GLuint idVBO_color = 0; ///< VBO para colores (utilizado en la versión no entrelazada)
+            // Colección de modelos 3D en la escena
+            std::vector<std::unique_ptr<Modelo>> modelos;
+            bool modoAlambre = true; ///< Modo de dibujado (GL_LINE/GL_FILL)
 
             // El constructor es privado para evitar que se cree el objeto desde otros módulos
             Renderer();
@@ -55,13 +60,21 @@ namespace PAG
 
             void mostrarInformacionGL();
 
+            // Getters y Setters de estado y cámara
+            Camara& getCamara() { return camara; }
+            const Camara& getCamara() const { return camara; }
+
+            const std::vector<std::unique_ptr<Modelo>>& getModelos() const { return modelos; }
+            bool isModoAlambre() const { return modoAlambre; }
+            void setModoAlambre(bool activo) { modoAlambre = activo; }
+
             void notificarCambioColor(float r, float g, float b, float a) override;
             void notificarCargarShader(const std::string &nombreBase) override;
             void notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2 = 0.0f) override;
 
-            void creaModelo();
-            void crearModeloNoEntrelazado();
-            void crearModeloEntrelazado();
+            void notificarCargarModelo(const std::string& rutaArchivo) override;
+            void notificarEliminarModelo(int indice) override;
+            void notificarTransformarModelo(int indice, glm::vec3 pos, glm::vec3 rot, glm::vec3 esc) override;
 
             void aplicarMovimientoRaton(float deltaX, float deltaY);
     };

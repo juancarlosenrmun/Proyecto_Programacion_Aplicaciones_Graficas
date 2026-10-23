@@ -192,7 +192,6 @@ int main()
 
         PAG::Renderer::getInstance().mostrarInformacionGL();
 
-        PAG::Renderer::getInstance().creaModelo ();
         //PAG::Renderer::getInstance().notificarCargarShader("../pag04");
 
         PAG::GUI::getInstance().addMensaje("Shader y modelo cargados con exito");

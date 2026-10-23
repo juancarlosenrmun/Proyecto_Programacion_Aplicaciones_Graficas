@@ -18,7 +18,9 @@ add_executable(${PROJECT_NAME} ${MY_FILES} ${GLAD_FILES} ${IMGUI_FILES}
         ShaderProgram.h
         ImGui/src/imgui_stdlib.cpp
         Camara.cpp
-        Camara.h)
+        Camara.h
+        Modelo.cpp
+        Modelo.h)
 
 target_include_directories( ${PROJECT_NAME} PUBLIC GLAD/include ImGui/include )
 

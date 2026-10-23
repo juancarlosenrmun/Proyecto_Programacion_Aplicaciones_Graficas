@@ -44,6 +44,8 @@ namespace PAG {
 
             void ventanaCamara();
 
+            void ventanaModelos();
+
             // Estado de la cámara en la GUI
             TipoMovimiento tipoMovimientoActivo = TipoMovimiento::ZOOM;
             float fovAnterior = 45.0f;
