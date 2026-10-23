@@ -93,61 +93,182 @@ En esta práctica se ha añadido soporte completo para una cámara virtual 3D ut
 
 ---
 
-## Diagrama de Clases UML Actualizado
+## Práctica 06: Modelos
+
+En esta práctica se desacopla la gestión geométrica del renderizador (`PAG::Renderer`), introduciendo la clase `PAG::Modelo` para importar archivos OBJ e instanciar múltiples modelos en la escena.
+
+### 1. Integración de Assimp
+* Se utiliza la librería **Assimp** (*Open Asset Import Library*) mediante los flags `aiProcess_JoinIdenticalVertices`, `aiProcess_Triangulate` y `aiProcess_GenSmoothNormals`.
+* Se recorren todas las mallas del archivo para consolidar vértices e índices en un único Vertex Array Object (VAO) por cada modelo.
+
+### 2. Transformaciones de Modelado (Matriz M)
+* Cada modelo administra sus vectores de **Posición**, **Rotación** y **Escala**.
+* La matriz $M$ es enviada a la GPU como un uniform (`mModel`) antes del renderizado de cada objeto.
+* El Vertex Shader (`pag06-vs.glsl`) procesa la posición final mediante:
+  $$gl\_Position = mProy \cdot mVis \cdot mModel \cdot vec4(posicion, 1.0)$$
+
+### 3. Controles en la Interfaz (Dear ImGui)
+* **Gestor de Modelos:** Permite cargar archivos OBJ especificando la ruta relativa o mediante un selector.
+* **Transformación interactiva:** Sliders de edición continua para mover, rotar y escalar el modelo seleccionado en tiempo real.
+* **Modo Alambre:** Permite alternar la visualización entre `GL_LINE` y `GL_FILL`.
+
+---
+
+## Diagrama de Clases UML
 
 ```mermaid
 classDiagram
     class Listener {
         <<interface>>
-        +~Listener()
-        +notificarCambioColor(r: float, g: float, b: float, a: float)* void
-        +notificarCargarShader(nombreBase: const string&)* void
-        +notificarMovimientoCamara(tipo: TipoMovimiento, delta1: float, delta2: float)* void
+        +~Listener()*
+        +notificarCambioColor(float r, float g, float b, float a)* void
+        +notificarCargarShader(const string& nombreBase) void
+        +notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) void
+        +notificarCargarModelo(const string& rutaArchivo)* void
+        +notificarEliminarModelo(int indice)* void
+        +notificarTransformarModelo(int indice, vec3 pos, vec3 rot, vec3 esc)* void
+    }
+
+    class TipoMovimiento {
+        <<enumeration>>
+        PAN
+        TILT
+        DOLLY
+        CRANE
+        ORBIT
+        ZOOM
+    }
+
+    class Vertice {
+        <<struct>>
+        +posicion: vec3
+        +color: vec3
+    }
+
+    class Modelo {
+        -nombre: string
+        -idVAO: GLuint
+        -idVBO: GLuint
+        -idIBO: GLuint
+        -numIndices: GLsizei
+        -posicion: vec3
+        -rotacion: vec3
+        -escala: vec3
+        -crearBuffers(const vector~Vertice~& vertices, const vector~GLuint~& indices) void
+        +Modelo(const string& rutaArchivo)
+        +~Modelo()
+        +dibujar(const ShaderProgram& shader) void
+        +getMatrizModelado() const mat4
+        +getNombre() const string&
+        +getPosicion() vec3
+        +getRotacion() vec3
+        +getEscala() vec3
+        +setPosicion(const vec3& pos) void
+        +setRotacion(const vec3& rot) void
+        +setEscala(const vec3& esc) void
+    }
+
+    class ShaderProgram {
+        -idVS: GLuint
+        -idFS: GLuint
+        -idSP: GLuint
+        -cargarArchivoTexto(const string& rutaArchivo) string
+        -comprobarCompilacionShader(GLuint shader, const string& tipoShader) void
+        -comprobarEnlazadoProgram(GLuint program) void
+        -liberarRecursos() void
+        +ShaderProgram()
+        +~ShaderProgram()
+        +cargarDesdeArchivos(const string& nombreBase) void
+        +activar() const void
+        +estaListo() const bool
+        +getIdProgram() const GLuint
+        +setUniformMat4(const string& nombre, const mat4& matriz) const void
     }
 
     class Camara {
         -posicion: vec3
         -puntoInteres: vec3
-        -up: vec3
-        -fovY: float
-        -aspecto: float
+        -vectorArriba: vec3
+        -fov: float
+        -aspectRatio: float
         -zNear: float
         -zFar: float
-        +Camara()
-        +getMatrizVision() mat4
-        +getMatrizProyeccion() mat4
-        +establecerAspecto(aspecto: float) void
-        +pan(anguloGrados: float) void
-        +tilt(anguloGrados: float) void
-        +dolly(desplX: float, desplZ: float) void
-        +crane(desplY: float) void
-        +orbitar(deltaLat: float, deltaLon: float) void
-        +zoom(deltaFov: float) void
-    }
-
-    class ShaderProgram {
-        -idSP: GLuint
-        +setUniformMat4(nombre: const string&, matriz: const mat4&) void
-        +activar() const void
+        +getMatrizVision() const mat4
+        +getMatrizProyeccion() const mat4
+        +pan(float delta) void
+        +tilt(float delta) void
+        +dolly(float deltaX, float deltaY) void
+        +crane(float delta) void
+        +orbit(float deltaLat, float deltaLon) void
+        +zoom(float deltaFov) void
     }
 
     class Renderer {
         -static instance: Renderer*
         -camara: Camara
+        -movimientoActivo: TipoMovimiento
+        -sensibilidadRaton: float
         -shaderProgram: ShaderProgram
+        -modelos: vector~unique_ptr~Modelo~~
+        -modoAlambre: bool
+        -Renderer()
+        +~Renderer()
         +static getInstance() Renderer&
+        +inicializar() void
         +refrescar() void
-        +aplicarMovimientoRaton(deltaX: float, deltaY: float) void
+        +establecerViewport(int x, int y, int width, int height) void
+        +establecerColor(float r, float g, float b, float a) void
+        +obtenerColor(float colorActual[4]) void
+        +mostrarInformacionGL() void
+        +getCamara() Camara&
+        +getModelos() const vector~unique_ptr~Modelo~~&
+        +isModoAlambre() const bool
+        +setModoAlambre(bool activo) void
+        +notificarCambioColor(float r, float g, float b, float a) void
+        +notificarCargarShader(const string& nombreBase) void
+        +notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) void
+        +notificarCargarModelo(const string& rutaArchivo) void
+        +notificarEliminarModelo(int indice) void
+        +notificarTransformarModelo(int indice, vec3 pos, vec3 rot, vec3 esc) void
+        +aplicarMovimientoRaton(float deltaX, float deltaY) void
     }
 
     class GUI {
         -static instance: GUI*
+        -mensajes: vector~string~
+        -autoScroll: bool
+        -colorActual: float[4]
+        -nombreShaderBase: string
         -tipoMovimientoActivo: TipoMovimiento
+        -fovAnterior: float
+        -listeners: vector~Listener*~
+        -GUI()
+        -selectorColorTriangular() void
+        -consola() void
+        -ventanaShaderProgram() void
         -ventanaCamara() void
+        -ventanaModelos() void
+        -notificarObservadoresColor() void
+        -notificarObservadoresShader() void
+        -notificarObservadoresMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) void
+        +~GUI()
+        +static getInstance() GUI&
+        +inicializar(GLFWwindow* window) void
+        +render() void
+        +finalizar() void
+        +procesarBotonRaton(int button, int action) void
+        +addMensaje(const string& mensaje) void
+        +addListener(Listener* listener) void
+        +removeListener(Listener* listener) void
     }
 
-    Listener <|.. Renderer : Implementa
-    Renderer "1" *-- "1" Camara : Posee
-    Renderer "1" *-- "1" ShaderProgram : Posee
-    GUI "1" o-- "*" Listener : Notifica
+    Listener <|.. Renderer : Implementa (Observador Concreto)
+    GUI "1" o-- "*" Listener : Notifica (Sujeto)
+    Renderer "1" *-- "1" Camara : Composición
+    Renderer "1" *-- "1" ShaderProgram : Composición
+    Renderer "1" *-- "*" Modelo : Gestiona 
+    Modelo "1" *-- "*" Vertice : Agrupa
+    Modelo ..> ShaderProgram : Recibe en dibujar()
+    Renderer ..> TipoMovimiento : Usa
+    GUI ..> TipoMovimiento : Usa
 ```
