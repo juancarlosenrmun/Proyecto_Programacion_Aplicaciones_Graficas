@@ -257,35 +257,30 @@ namespace PAG {
     }
 
     void Renderer::aplicarMovimientoRaton(float deltaX, float deltaY) {
+        float sens = 0.25f;
+
         switch (movimientoActivo) {
             case TipoMovimiento::PAN:
-                // Arrastrar en X rota la cámara en horizontal (Pan)
-                camara.pan(-deltaX * sensibilidadRaton);
-                break;
-
             case TipoMovimiento::TILT:
-                // Arrastrar en Y rota la cámara en vertical (Tilt)
-                camara.tilt(-deltaY * sensibilidadRaton);
+                // Combina Pan y Tilt fluidamente al arrastrar
+                camara.pan(-deltaX * sens);
+                camara.tilt(-deltaY * sens);
                 break;
 
             case TipoMovimiento::DOLLY:
-                // Arrastrar en X/Y traslada la cámara en el plano local
-                camara.dolly(deltaX * 0.01f, deltaY * 0.01f);
+                camara.dolly(deltaX * 0.005f, deltaY * 0.005f);
                 break;
 
             case TipoMovimiento::CRANE:
-                // Arrastrar en Y sube o baja la cámara en el eje Y global
-                camara.crane(-deltaY * 0.01f);
+                camara.crane(-deltaY * 0.005f);
                 break;
 
             case TipoMovimiento::ORBIT:
-                // Arrastrar en Y cambia la latitud, arrastrar en X cambia la longitud
-                camara.orbitar(-deltaY * sensibilidadRaton, -deltaX * sensibilidadRaton);
+                camara.orbitar(-deltaY * sens, -deltaX * sens);
                 break;
 
             case TipoMovimiento::ZOOM:
-                // Arrastrar en Y aumenta o disminuye el FOV
-                camara.zoom(deltaY * sensibilidadRaton);
+                camara.zoom(deltaY * sens);
                 break;
         }
     }
