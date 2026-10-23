@@ -38,8 +38,19 @@ namespace PAG {
                     attrib.vertices[3 * index.vertex_index + 2]
                 );
 
-                // Color gris por defecto
-                vert.color = glm::vec3(0.7f, 0.7f, 0.7f);
+                // Si el archivo OBJ tiene información de normales, las usamos para generar un color RGB
+                if (!attrib.normals.empty() && index.normal_index >= 0) {
+                    glm::vec3 normal(
+                        attrib.normals[3 * index.normal_index + 0],
+                        attrib.normals[3 * index.normal_index + 1],
+                        attrib.normals[3 * index.normal_index + 2]
+                    );
+                    // Mapeamos la normal del rango [-1.0, 1.0] al rango de color RGB [0.0, 1.0]
+                    vert.color = glm::normalize(normal) * 0.5f + glm::vec3(0.5f);
+                } else {
+                    // Si no tiene normales, usamos un color basado en la posición
+                    vert.color = glm::abs(glm::normalize(vert.posicion));
+                }
 
                 verticesTotales.push_back(vert);
                 indicesTotales.push_back(idx++);
