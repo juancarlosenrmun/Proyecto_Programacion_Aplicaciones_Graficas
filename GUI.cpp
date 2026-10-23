@@ -8,6 +8,8 @@
 #include "GUI.h"
 #include <algorithm>
 
+#include "Renderer.h"
+
 namespace PAG {
     GUI* GUI::instance = nullptr; //Inicializamos puntero
 
@@ -69,7 +71,7 @@ namespace PAG {
      * @brief Renderiza la ventana correspondiente a la consola de eventos.
      */
     void GUI::consola() {
-        ImGui::SetNextWindowPos(ImVec2(600,10), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(850,10), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(360, 300), ImGuiCond_Once);
         if (ImGui::Begin("CONSOLA")) {
 
@@ -117,12 +119,13 @@ namespace PAG {
     }
 
     void GUI::ventanaCamara() {
-    ImGui::SetNextWindowPos(ImVec2(10, 360), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(850, 360), ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(320, 200), ImGuiCond_Once);
 
     if (ImGui::Begin("Camera")) {
         static int itemActual = 0;
-        const char* movimientos[] = { "Zoom", "Pan", "Tilt", "Dolly", "Crane", "Orbit" };
+
+        const char* movimientos[] = { "Pan", "Tilt", "Dolly", "Crane", "Orbit", "Zoom" };
 
         ImGui::Text("Movement");
         if (ImGui::Combo("##MovementCombo", &itemActual, movimientos, IM_ARRAYSIZE(movimientos))) {
@@ -134,12 +137,12 @@ namespace PAG {
 
         switch (tipoMovimientoActivo) {
             case TipoMovimiento::ZOOM: {
-                // Sincronización continua del FOV
-                float fov = Renderer::getInstance().getCamara().getFovY();
+                static float fov = 45.0f;
                 ImGui::Text("Angle");
                 if (ImGui::SliderFloat("##AngleSlider", &fov, 1.0f, 120.0f, "%.0f")) {
-                    float deltaFov = fov - Renderer::getInstance().getCamara().getFovY();
+                    float deltaFov = fov - fovAnterior;
                     notificarObservadoresMovimientoCamara(TipoMovimiento::ZOOM, deltaFov);
+                    fovAnterior = fov;
                 }
                 break;
             }

@@ -8,6 +8,8 @@
 #ifndef PR02_GUI_H
 #define PR02_GUI_H
 
+#include <glad/glad.h>
+
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
