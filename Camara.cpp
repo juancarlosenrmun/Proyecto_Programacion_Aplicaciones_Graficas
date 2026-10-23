@@ -46,6 +46,10 @@ namespace PAG {
           glm::vec3 n = glm::normalize(posicion - puntoInteres);
           glm::vec3 u = glm::normalize(glm::cross(up, n)); // Eje horizontal local
 
+          // Control de protección si miramos directamente hacia arriba/abajo
+          if (glm::length(u) < 0.0001f) return;
+          u = glm::normalize(u);
+
           glm::vec3 dir = puntoInteres - posicion;
           dir = glm::rotate(dir, glm::radians(anguloGrados), u);
           puntoInteres = posicion + dir;
@@ -54,6 +58,9 @@ namespace PAG {
      void Camara::dolly(float desplX, float desplZ) {
           glm::vec3 n = glm::normalize(posicion - puntoInteres);
           glm::vec3 u = glm::normalize(glm::cross(up, n));
+
+          if (glm::length(u) < 0.0001f) u = glm::vec3(1.0f, 0.0f, 0.0f);
+          else u = glm::normalize(u);
 
           glm::vec3 desplazamiento = u * desplX + n * desplZ;
           posicion += desplazamiento;
@@ -75,7 +82,11 @@ namespace PAG {
           // Latitud (eje u local)
           glm::vec3 n = glm::normalize(dir);
           glm::vec3 u = glm::normalize(glm::cross(up, n));
-          dir = glm::rotate(dir, glm::radians(deltaLatGrados), u);
+
+          if (glm::length(u) >= 0.0001f) {
+               u = glm::normalize(u);
+               dir = glm::rotate(dir, glm::radians(deltaLatGrados), u);
+          }
 
           posicion = puntoInteres + dir;
      }
