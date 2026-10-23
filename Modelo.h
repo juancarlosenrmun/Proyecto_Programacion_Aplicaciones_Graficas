@@ -20,6 +20,17 @@ namespace PAG {
     };
 
     class Modelo {
+        private:
+            std::string nombre;
+            GLuint idVAO = 0;
+            GLuint idVBO = 0;
+            GLuint idIBO = 0;
+            GLsizei numIndices = 0;
+
+            // Transformaciones físicas
+            glm::vec3 posicion = glm::vec3(0.0f);
+            glm::vec3 rotacion = glm::vec3(0.0f); // Ángulos en grados (X, Y, Z)
+            glm::vec3 escala   = glm::vec3(1.0f);
     };
 }
 
