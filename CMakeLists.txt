@@ -7,6 +7,7 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 file( GLOB MY_FILES *.cpp )
 file( GLOB GLAD_FILES GLAD/src/*.c )
@@ -24,4 +25,5 @@ target_include_directories( ${PROJECT_NAME} PUBLIC GLAD/include ImGui/include )
 
 target_link_libraries( ${PROJECT_NAME} PRIVATE
         OpenGL::GL glfw
-        glm::glm)
+        glm::glm
+        assimp::assimp)
