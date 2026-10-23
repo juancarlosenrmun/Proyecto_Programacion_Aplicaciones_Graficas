@@ -69,20 +69,27 @@ namespace PAG {
      * @brief Realiza el borrado de los buffers de color y profundidad en cada fotograma.
      */
     void Renderer::refrescar() {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // refrescamos el buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (shaderProgram.estaListo() && idVAO != 0) {
+        if (shaderProgram.estaListo()) {
             shaderProgram.activar();
 
-            // Enviamos las matrices de la cámara al shader
+            // Aplicar modo alambre o sólido según la configuración
+            if (modoAlambre) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            } else {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+
+            // Enviamos las matrices de Visión y Proyección comunes a la escena
             shaderProgram.setUniformMat4("mVis", camara.getMatrizVision());
             shaderProgram.setUniformMat4("mProy", camara.getMatrizProyeccion());
 
-            glBindVertexArray(idVAO);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+            // Dibujamos todos los modelos activos en la escena
+            for (auto& modelo : modelos) {
+                modelo->dibujar(shaderProgram);
+            }
         }
-
     }
 
     /**
