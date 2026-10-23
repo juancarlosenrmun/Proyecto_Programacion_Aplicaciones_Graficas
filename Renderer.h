@@ -60,6 +60,14 @@ namespace PAG
 
             void mostrarInformacionGL();
 
+            // Getters y Setters de estado y cámara
+            Camara& getCamara() { return camara; }
+            const Camara& getCamara() const { return camara; }
+
+            const std::vector<std::unique_ptr<Modelo>>& getModelos() const { return modelos; }
+            bool isModoAlambre() const { return modoAlambre; }
+            void setModoAlambre(bool activo) { modoAlambre = activo; }
+
             void notificarCambioColor(float r, float g, float b, float a) override;
             void notificarCargarShader(const std::string &nombreBase) override;
             void notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2 = 0.0f) override;
