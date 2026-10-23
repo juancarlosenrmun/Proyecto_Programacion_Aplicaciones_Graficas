@@ -54,8 +54,8 @@ namespace PAG {
      */
     void GUI::selectorColorTriangular() {
         //Definimos ventana y controles
-        ImGui::SetNextWindowPos(ImVec2(10,10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(325, 300), ImGuiCond_Once); //Tenemos que establcer el tamaño de la ventan
+        ImGui::SetNextWindowPos(ImVec2(10,290), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(320, 270), ImGuiCond_Once); //Tenemos que establcer el tamaño de la ventan
         if (ImGui::Begin("COLOR DE FONDO")) {
             ImGui::SetWindowFontScale(1.0f);
 
@@ -71,8 +71,8 @@ namespace PAG {
      * @brief Renderiza la ventana correspondiente a la consola de eventos.
      */
     void GUI::consola() {
-        ImGui::SetNextWindowPos(ImVec2(850,10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(360, 300), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(950,260), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(320, 440), ImGuiCond_Once);
         if (ImGui::Begin("CONSOLA")) {
 
             //Añadimos un botón para limpiar la consola
@@ -104,8 +104,8 @@ namespace PAG {
      * @brief Ventana para especificar el nombre base del Shader Program y cargarlo.
      */
     void GUI::ventanaShaderProgram() {
-        ImGui::SetNextWindowPos(ImVec2(10, 450), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(325, 100), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(10, 580), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(320, 120), ImGuiCond_Once);
         if (ImGui::Begin("Shader Program")) {
             // Caja de texto vinculada a std::string con selección automática
             ImGui::InputText("##shaderName", &nombreShaderBase, ImGuiInputTextFlags_AutoSelectAll);
@@ -119,8 +119,8 @@ namespace PAG {
     }
 
     void GUI::ventanaCamara() {
-        ImGui::SetNextWindowPos(ImVec2(850, 360), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(320, 200), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(950, 10), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(320, 240), ImGuiCond_Once);
 
         if (ImGui::Begin("Camera")) {
             static int itemActual = 0;
@@ -198,8 +198,8 @@ namespace PAG {
     }
 
     void GUI::ventanaModelos() {
-        ImGui::SetNextWindowPos(ImVec2(380, 10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(340, 320), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(320, 270), ImGuiCond_Once);
 
         if (ImGui::Begin("Gestor de Modelos")) {
             // Opción para alternar entre Malla de Alambre y Sólido

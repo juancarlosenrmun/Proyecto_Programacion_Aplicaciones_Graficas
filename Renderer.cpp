@@ -28,18 +28,7 @@ namespace PAG {
     /**
      * @brief Destructor por defecto
      */
-    Renderer::~Renderer()
-    {
-        if ( idVBO != 0 )
-        { glDeleteBuffers ( 1, &idVBO );
-        }
-        if ( idIBO != 0 )
-        { glDeleteBuffers ( 1, &idIBO );
-        }
-        if ( idVAO != 0 )
-        { glDeleteVertexArrays ( 1, &idVAO );
-        }
-    }
+    Renderer::~Renderer() = default;
 
     /**
      * @brief Consulta del objeto único de la clase

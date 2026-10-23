@@ -43,8 +43,7 @@ namespace PAG {
             virtual void notificarEliminarModelo(int indice) = 0;
             virtual void notificarTransformarModelo(int indice, glm::vec3 pos, glm::vec3 rot, glm::vec3 esc) = 0;
     };
-    };
-}
+};
 
 
 #endif //PR02_LISTENER_H

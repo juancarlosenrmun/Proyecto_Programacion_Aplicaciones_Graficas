@@ -43,7 +43,10 @@ namespace PAG {
 
             void dibujar(const ShaderProgram& shader);
 
-        // Getters / Setters de transformación
+            // Matriz de Modelado (M)
+            glm::mat4 getMatrizModelado() const;
+
+            // Getters / Setters de transformación
             const std::string& getNombre() const { return nombre; }
             glm::vec3 getPosicion() const { return posicion; }
             glm::vec3 getRotacion() const { return rotacion; }
