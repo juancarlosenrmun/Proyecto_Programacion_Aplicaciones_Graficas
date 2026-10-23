@@ -13,6 +13,12 @@
 #include "ShaderProgram.h"
 
 namespace PAG {
+
+    struct Vertice {
+        glm::vec3 posicion;
+        glm::vec3 color; // Color asignado/interpolado
+    };
+
     class Modelo {
     };
 }
