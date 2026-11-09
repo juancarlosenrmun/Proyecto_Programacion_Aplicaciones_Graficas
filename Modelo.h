@@ -19,6 +19,13 @@ namespace PAG {
         glm::vec3 color; // Color asignado/interpolado
     };
 
+    struct Material {
+        glm::vec3 Ka = glm::vec3(0.2f); // Componente Ambiente
+        glm::vec3 Kd = glm::vec3(0.8f, 0.2f, 0.2f); // Componente Difusa (color base)
+        glm::vec3 Ks = glm::vec3(1.0f); // Componente Especular
+        float shininess = 32.0f;        // Exponente de brillo especular
+    };
+
     class Modelo {
         private:
             std::string nombre;
