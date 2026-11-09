@@ -199,7 +199,8 @@ namespace PAG {
 
     void GUI::ventanaModelos() {
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(320, 270), ImGuiCond_Once);
+        // Ampliamos el alto de 270 a 480 para acomodar las propiedades del material
+        ImGui::SetNextWindowSize(ImVec2(320, 480), ImGuiCond_Once);
 
         if (ImGui::Begin("Gestor de Modelos")) {
             // Opción para alternar entre Malla de Alambre y Sólido
@@ -242,7 +243,7 @@ namespace PAG {
                     ImGui::EndCombo();
                 }
 
-                // Controles de Transformación de Modelado (M)
+                // 1. Controles de Transformación de Modelado (M)
                 auto& mod = modelos[seleccionado];
                 glm::vec3 pos = mod->getPosicion();
                 glm::vec3 rot = mod->getRotacion();
@@ -259,7 +260,28 @@ namespace PAG {
                     }
                 }
 
+                // Dentro de GUI::ventanaModelos()
+                if (!modelos.empty()) {
+                    auto& mod = modelos[seleccionado];
+                    Material mat = mod->getMaterial();
+
+                    ImGui::Separator();
+                    ImGui::Text("Propiedades del Material");
+
+                    bool matModificado = false;
+                    matModificado |= ImGui::ColorEdit3("Color Ambiente (Ka)", &mat.Ka.x);
+                    matModificado |= ImGui::ColorEdit3("Color Difuso (Kd)",   &mat.Kd.x);
+                    matModificado |= ImGui::ColorEdit3("Color Especular (Ks)", &mat.Ks.x);
+                    matModificado |= ImGui::SliderFloat("Brillo (Shininess)",  &mat.shininess, 1.0f, 128.0f);
+
+                    if (matModificado) {
+                        mod->setMaterial(mat);
+                    }
+                }
+
+
                 ImGui::Spacing();
+                ImGui::Separator();
                 if (ImGui::Button("Eliminar Modelo Seleccionado")) {
                     for (auto* listener : listeners) {
                         listener->notificarEliminarModelo(seleccionado);
