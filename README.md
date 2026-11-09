@@ -68,7 +68,7 @@ En esta práctica se ha completado el desacoplamiento de la compilación y enlaz
 
 ## Versión 05: La Cámara Virtual
 
-En esta práctica se ha añadido soporte completo para una cámara virtual 3D utilizando la biblioteca **GLM** (*OpenGL Mathematics*).
+En esta versión  se ha añadido soporte completo para una cámara virtual 3D utilizando la biblioteca **GLM** (*OpenGL Mathematics*).
 
 ### 1. Clase `PAG::Camara`
 * **Definición Teórica:** Implementa los parámetros de visión ($eye$, $lookAt$, $up$) y la proyección de la cámara ($fovY$, $aspecto$, $zNear$, $zFar$).
@@ -112,9 +112,33 @@ En esta práctica se desacopla la gestión geométrica del renderizador (`PAG::R
 * **Transformación interactiva:** Sliders de edición continua para mover, rotar y escalar el modelo seleccionado en tiempo real.
 * **Modo Alambre:** Permite alternar la visualización entre `GL_LINE` y `GL_FILL`.
 
+## Versión 07: Subrutinas GLSL y Materiales
+
+En esta versión se ha añadido soporte para las propiedades de materiales ópticos de los objetos 3D y se ha implementado el uso de subrutinas GLSL para alternar modos de visualización sin introducir estructuras de control condicionales (`if`) en la GPU.
+
+### 1. Gestión de Materiales en la Clase `PAG::Modelo`
+- **Estructura `Material`:** Se encapsulan las propiedades ópticas del objeto: color ambiente ($K_a$), color difuso ($K_d$), color especular ($K_s$) y exponente de brillo especular (`shininess`).
+- **Asociación por Modelo:** Cada instancia de `PAG::Modelo` gestiona sus propias propiedades de material a través de los métodos `getMaterial()` y `setMaterial()`.
+- **Integración con ImGui:** Se han incorporado editores de color (`ImGui::ColorEdit3`) y deslizadores numéricos (`ImGui::SliderFloat`) dentro del panel *Gestor de Modelos* para consultar y modificar el material del objeto seleccionado en tiempo real.
+
+### 2. Bloques de Interfaz GLSL (`interface blocks`)
+- **Agrupación de Datos en Pipeline:** Se han sustituido las variables sueltas `in`/`out` por un bloque de interfaz denominado `salidaVS` en el Vertex Shader y recibido como `entrada` en el Fragment Shader (`pag07-vs.glsl` / `pag07-fs.glsl`).
+- **Estructuración:** Facilita la transferencia limpia de la posición en espacio de cámara y la matriz normal calculada sin riesgo de colisión de nombres.
+
+### 3. Subrutinas GLSL (Renderizado sin condicionales)
+- **Definición en Shader:** Se ha declarado el tipo de subrutina `subroutine vec4 fCalcularColor()` junto a su uniform `uMetodoColorElegido` en el Fragment Shader.
+- **Implementaciones Concretas:**
+  - `colorAlambre()`: Devuelve un color rojo constante (`vec4(1.0, 0.0, 0.0, 1.0)`) para dibujar las aristas en modo alambre (`GL_LINE`).
+  - `colorSolido()`: Utiliza el componente difuso ($K_d$) del material para pintar la superficie en modo sólido (`GL_FILL`).
+- **Activación desde C++:** En `PAG::Renderer::refrescar()`, tras invocar `glUseProgram`, se consulta el identificador de la subrutina activa mediante `glGetSubroutineIndex` y se aplica a la GPU utilizando `glUniformSubroutinesuiv`.
+
+### 4. Extensión de `PAG::ShaderProgram` y GUI
+- **Nuevos Métodos Uniform:** Se añadieron los métodos `setUniformVec3` y `setUniformFloat` a la clase `PAG::ShaderProgram` para transmitir las propiedades del material al shader en cada fotograma.
+- **Estado Inicial Plegado:** Se ha configurado la opción `ImGuiCond_Once` con `ImGui::SetNextWindowCollapsed(true)` en los paneles de ImGui para arrancar la aplicación con las ventanas recogidas y mantener despejada la vista principal 3D.
+
 ---
 
-## Diagrama de Clases UML
+## Diagrama de Clases UML (Actualizado)
 
 ```mermaid
 classDiagram
@@ -139,6 +163,14 @@ classDiagram
         ZOOM
     }
 
+    class Material {
+        <<struct>>
+        +Ka: vec3
+        +Kd: vec3
+        +Ks: vec3
+        +shininess: float
+    }
+
     class Vertice {
         <<struct>>
         +posicion: vec3
@@ -147,6 +179,7 @@ classDiagram
 
     class Modelo {
         -nombre: string
+        -material: Material
         -idVAO: GLuint
         -idVBO: GLuint
         -idIBO: GLuint
@@ -159,6 +192,8 @@ classDiagram
         +~Modelo()
         +dibujar(const ShaderProgram& shader) void
         +getMatrizModelado() const mat4
+        +getMaterial() Material&
+        +setMaterial(const Material& mat) void
         +getNombre() const string&
         +getPosicion() vec3
         +getRotacion() vec3
@@ -183,6 +218,8 @@ classDiagram
         +estaListo() const bool
         +getIdProgram() const GLuint
         +setUniformMat4(const string& nombre, const mat4& matriz) const void
+        +setUniformVec3(const string& nombre, const vec3& vector) const void
+        +setUniformFloat(const string& nombre, float valor) const void
     }
 
     class Camara {
@@ -266,7 +303,8 @@ classDiagram
     GUI "1" o-- "*" Listener : Notifica (Sujeto)
     Renderer "1" *-- "1" Camara : Composición
     Renderer "1" *-- "1" ShaderProgram : Composición
-    Renderer "1" *-- "*" Modelo : Gestiona 
+    Renderer "1" *-- "*" Modelo : Gestiona
+    Modelo "1" *-- "1" Material : Contiene
     Modelo "1" *-- "*" Vertice : Agrupa
     Modelo ..> ShaderProgram : Recibe en dibujar()
     Renderer ..> TipoMovimiento : Usa
