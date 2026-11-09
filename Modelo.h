@@ -19,9 +19,17 @@ namespace PAG {
         glm::vec3 color; // Color asignado/interpolado
     };
 
+    struct Material {
+        glm::vec3 Ka = glm::vec3(0.2f); // Componente Ambiente
+        glm::vec3 Kd = glm::vec3(0.8f, 0.2f, 0.2f); // Componente Difusa (color base)
+        glm::vec3 Ks = glm::vec3(1.0f); // Componente Especular
+        float shininess = 32.0f;        // Exponente de brillo especular
+    };
+
     class Modelo {
         private:
             std::string nombre;
+            Material material; //Material asociado al modelo
             GLuint idVAO = 0;
             GLuint idVBO = 0;
             GLuint idIBO = 0;
@@ -51,6 +59,10 @@ namespace PAG {
             glm::vec3 getPosicion() const { return posicion; }
             glm::vec3 getRotacion() const { return rotacion; }
             glm::vec3 getEscala() const { return escala; }
+            // Getters y Setters de Material
+            Material& getMaterial() { return material; }
+            const Material& getMaterial() const { return material; }
+            void setMaterial(const Material& mat) { material = mat; }
 
             void setPosicion(const glm::vec3& pos) { posicion = pos; }
             void setRotacion(const glm::vec3& rot) { rotacion = rot; }

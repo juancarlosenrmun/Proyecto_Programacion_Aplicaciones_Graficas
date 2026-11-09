@@ -106,4 +106,20 @@ namespace PAG {
             }
         }
     }
+
+    void ShaderProgram::setUniformVec3(const std::string& nombre, const glm::vec3& vector) const {
+        if (idSP == 0) return;
+        GLint location = glGetUniformLocation(idSP, nombre.c_str());
+        if (location != -1) {
+            glUniform3fv(location, 1, glm::value_ptr(vector));
+        }
+    }
+
+    void ShaderProgram::setUniformFloat(const std::string& nombre, float valor) const {
+        if (idSP == 0) return;
+        GLint location = glGetUniformLocation(idSP, nombre.c_str());
+        if (location != -1) {
+            glUniform1f(location, valor);
+        }
+    }
 }

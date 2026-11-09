@@ -56,6 +56,10 @@ namespace PAG {
         //Definimos ventana y controles
         ImGui::SetNextWindowPos(ImVec2(10,290), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(320, 270), ImGuiCond_Once); //Tenemos que establcer el tamaño de la ventan
+
+        // Forzar a que empiece plegada la primera vez
+        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+
         if (ImGui::Begin("COLOR DE FONDO")) {
             ImGui::SetWindowFontScale(1.0f);
 
@@ -73,6 +77,10 @@ namespace PAG {
     void GUI::consola() {
         ImGui::SetNextWindowPos(ImVec2(950,260), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(320, 440), ImGuiCond_Once);
+
+        // Forzar a que empiece plegada la primera vez
+        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+
         if (ImGui::Begin("CONSOLA")) {
 
             //Añadimos un botón para limpiar la consola
@@ -106,6 +114,10 @@ namespace PAG {
     void GUI::ventanaShaderProgram() {
         ImGui::SetNextWindowPos(ImVec2(10, 580), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(320, 120), ImGuiCond_Once);
+
+        // Forzar a que empiece plegada la primera vez
+        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+
         if (ImGui::Begin("Shader Program")) {
             // Caja de texto vinculada a std::string con selección automática
             ImGui::InputText("##shaderName", &nombreShaderBase, ImGuiInputTextFlags_AutoSelectAll);
@@ -121,6 +133,9 @@ namespace PAG {
     void GUI::ventanaCamara() {
         ImGui::SetNextWindowPos(ImVec2(950, 10), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(320, 240), ImGuiCond_Once);
+
+        // Forzar a que empiece plegada la primera vez
+        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
 
         if (ImGui::Begin("Camera")) {
             static int itemActual = 0;
@@ -199,7 +214,10 @@ namespace PAG {
 
     void GUI::ventanaModelos() {
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(320, 270), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(320, 480), ImGuiCond_Once);
+
+        // Forzar a que empiece plegada la primera vez
+        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
 
         if (ImGui::Begin("Gestor de Modelos")) {
             // Opción para alternar entre Malla de Alambre y Sólido
@@ -242,7 +260,7 @@ namespace PAG {
                     ImGui::EndCombo();
                 }
 
-                // Controles de Transformación de Modelado (M)
+                // 1. Controles de Transformación de Modelado (M)
                 auto& mod = modelos[seleccionado];
                 glm::vec3 pos = mod->getPosicion();
                 glm::vec3 rot = mod->getRotacion();
@@ -259,7 +277,28 @@ namespace PAG {
                     }
                 }
 
+                // Dentro de GUI::ventanaModelos()
+                if (!modelos.empty()) {
+                    auto& mod = modelos[seleccionado];
+                    Material mat = mod->getMaterial();
+
+                    ImGui::Separator();
+                    ImGui::Text("Propiedades del Material");
+
+                    bool matModificado = false;
+                    matModificado |= ImGui::ColorEdit3("Color Ambiente (Ka)", &mat.Ka.x);
+                    matModificado |= ImGui::ColorEdit3("Color Difuso (Kd)",   &mat.Kd.x);
+                    matModificado |= ImGui::ColorEdit3("Color Especular (Ks)", &mat.Ks.x);
+                    matModificado |= ImGui::SliderFloat("Brillo (Shininess)",  &mat.shininess, 1.0f, 128.0f);
+
+                    if (matModificado) {
+                        mod->setMaterial(mat);
+                    }
+                }
+
+
                 ImGui::Spacing();
+                ImGui::Separator();
                 if (ImGui::Button("Eliminar Modelo Seleccionado")) {
                     for (auto* listener : listeners) {
                         listener->notificarEliminarModelo(seleccionado);
