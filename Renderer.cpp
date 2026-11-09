@@ -61,21 +61,36 @@ namespace PAG {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (shaderProgram.estaListo()) {
-            shaderProgram.activar();
+            shaderProgram.activar(); //Usar glUseProgram antes de configurar subrutinas
 
-            // Aplicar modo alambre o sólido según la configuración
-            if (modoAlambre) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            } else {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
+            GLuint programId = shaderProgram.getIdProgram();
 
-            // Enviamos las matrices de Visión y Proyección comunes a la escena
+            // 1. Obtener índices de las subrutinas
+            GLuint idxAlambre = glGetSubroutineIndex(programId, GL_FRAGMENT_SHADER, "colorAlambre");
+            GLuint idxSolido  = glGetSubroutineIndex(programId, GL_FRAGMENT_SHADER, "colorSolido");
+
+            // 2. Seleccionar índice según el modo activo
+            GLuint subrutinaActiva = modoAlambre ? idxAlambre : idxSolido;
+
+            // 3. Activar subrutina en la GPU
+            glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &subrutinaActiva);
+
+            // Configurar tipo de rasterizado
+            glPolygonMode(GL_FRONT_AND_BACK, modoAlambre ? GL_LINE : GL_FILL);
+
+            // Uniforms globales de cámara
             shaderProgram.setUniformMat4("mVis", camara.getMatrizVision());
             shaderProgram.setUniformMat4("mProy", camara.getMatrizProyeccion());
 
-            // Dibujamos todos los modelos activos en la escena
+            // Renderizado de modelos
             for (auto& modelo : modelos) {
+                // Enviar propiedades del material del modelo
+                Material mat = modelo->getMaterial();
+                shaderProgram.setUniformVec3("uKa", mat.Ka);
+                shaderProgram.setUniformVec3("uKd", mat.Kd);
+                shaderProgram.setUniformVec3("uKs", mat.Ks);
+                shaderProgram.setUniformFloat("uShininess", mat.shininess);
+
                 modelo->dibujar(shaderProgram);
             }
         }
