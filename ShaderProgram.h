@@ -42,6 +42,8 @@ namespace PAG {
             GLuint getIdProgram() const { return idSP; }
 
             void setUniformMat4(const std::string& nombre, const glm::mat4& matriz) const;
+            void setUniformVec3(const std::string& nombre, const glm::vec3& vector) const;
+            void setUniformFloat(const std::string& nombre, float valor) const;
     };
 }
 
