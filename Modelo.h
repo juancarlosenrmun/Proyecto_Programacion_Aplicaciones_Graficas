@@ -59,6 +59,10 @@ namespace PAG {
             glm::vec3 getPosicion() const { return posicion; }
             glm::vec3 getRotacion() const { return rotacion; }
             glm::vec3 getEscala() const { return escala; }
+            // Getters y Setters de Material
+            Material& getMaterial() { return material; }
+            const Material& getMaterial() const { return material; }
+            void setMaterial(const Material& mat) { material = mat; }
 
             void setPosicion(const glm::vec3& pos) { posicion = pos; }
             void setRotacion(const glm::vec3& rot) { rotacion = rot; }
