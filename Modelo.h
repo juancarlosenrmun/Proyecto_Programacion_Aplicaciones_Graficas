@@ -29,6 +29,7 @@ namespace PAG {
     class Modelo {
         private:
             std::string nombre;
+            Material material; //Material asociado al modelo
             GLuint idVAO = 0;
             GLuint idVBO = 0;
             GLuint idIBO = 0;
