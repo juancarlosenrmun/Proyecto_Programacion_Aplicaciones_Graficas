@@ -37,7 +37,20 @@ namespace PAG {
             // Campo para el nombre base del shader
             std::string nombreShaderBase = "../pag08";
 
-            // Ventanas
+            GLFWwindow* ventanaPrincipal = nullptr;
+            ImGuiStyle estiloBase;
+            float escalaInterfaz = 0.0f;
+
+            bool modelosAbierto = false;
+            bool lucesAbierto = false;
+            bool camaraAbierto = false;
+            bool colorAbierto = false;
+            bool shaderAbierto = false;
+            bool consolaAbierto = false;
+
+            void actualizarEscalaInterfaz();
+            void dibujarPaneles();
+            void dibujarHerramientas();
             void selectorColorTriangular();
             void consola();
             void ventanaShaderProgram();

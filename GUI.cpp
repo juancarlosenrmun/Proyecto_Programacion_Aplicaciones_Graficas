@@ -11,6 +11,26 @@
 #include "Renderer.h"
 
 namespace PAG {
+    namespace {
+        bool abrirSeccion(const char* titulo, bool& abierta) {
+            // Conserva el estado de la sección cuando cambia de columna.
+            ImGui::SetNextItemOpen(abierta, ImGuiCond_Always);
+            abierta = ImGui::CollapsingHeader(titulo);
+            return abierta;
+        }
+
+        void prepararPanel(const ImVec2& posicion, float ancho, float altoMaximo) {
+            ImGui::SetNextWindowPos(posicion);
+            ImGui::SetNextWindowSize(ImVec2(ancho, 0.0f));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(ancho, 0.0f), ImVec2(ancho, altoMaximo));
+        }
+
+        constexpr ImGuiWindowFlags flagsPanel =
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
+    }
+
     GUI* GUI::instance = nullptr; //Inicializamos puntero
 
     /**
@@ -45,6 +65,8 @@ namespace PAG {
 
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Habilitar navvegación por teclado
 
+        ventanaPrincipal = window;
+        estiloBase = ImGui::GetStyle();
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init();
     }
@@ -53,35 +75,21 @@ namespace PAG {
      * @brief Renderiza la ventana correspondiente al selector de color en forma de rueda.
      */
     void GUI::selectorColorTriangular() {
-        //Definimos ventana y controles
-        ImGui::SetNextWindowPos(ImVec2(10,290), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(320, 270), ImGuiCond_Once); //Tenemos que establcer el tamaño de la ventan
-
-        // Forzar a que empiece plegada la primera vez
-        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-
-        if (ImGui::Begin("COLOR DE FONDO")) {
-            ImGui::SetWindowFontScale(1.0f);
-
+        if (abrirSeccion("Color de fondo", colorAbierto)) {
             // Si el usuario modifica la rueda de color, notificamos a los observadores
-            if (ImGui::ColorPicker4("Color de fondo", colorActual, ImGuiColorEditFlags_PickerHueWheel)) {
+            ImGui::SetNextItemWidth(std::min(ImGui::GetContentRegionAvail().x,
+                                             13.0f * ImGui::GetFontSize()));
+            if (ImGui::ColorPicker4("##ColorFondo", colorActual, ImGuiColorEditFlags_PickerHueWheel)) {
                 notificarObservadoresColor();
             }
         }
-        ImGui::End();
     }
 
     /**
      * @brief Renderiza la ventana correspondiente a la consola de eventos.
      */
     void GUI::consola() {
-        ImGui::SetNextWindowPos(ImVec2(950,260), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(320, 440), ImGuiCond_Once);
-
-        // Forzar a que empiece plegada la primera vez
-        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-
-        if (ImGui::Begin("CONSOLA")) {
+        if (abrirSeccion("Consola", consolaAbierto)) {
 
             //Añadimos un botón para limpiar la consola
             if (ImGui::Button("Limpiar")) {
@@ -92,7 +100,9 @@ namespace PAG {
             ImGui::Checkbox("Auto-scroll", &autoScroll);
             ImGui::Separator();
 
-            ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+            const float altoRegistro = 8.0f * ImGui::GetTextLineHeightWithSpacing();
+            ImGui::BeginChild("ScrollingRegion", ImVec2(0, altoRegistro),
+                              ImGuiChildFlags_Borders, ImGuiWindowFlags_HorizontalScrollbar);
 
             for (const auto& msg : mensajes) {
                 ImGui::TextUnformatted(msg.c_str());
@@ -104,19 +114,13 @@ namespace PAG {
             }
             ImGui::EndChild();
         }
-
-        ImGui::End();
     }
 
     /**
      * @brief Ventana para especificar el nombre base del Shader Program y cargarlo.
      */
     void GUI::ventanaShaderProgram() {
-        ImGui::SetNextWindowPos(ImVec2(10, 580), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(320, 120), ImGuiCond_Once);
-        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-
-        if (ImGui::Begin("Shader Program")) {
+        if (abrirSeccion("Shader Program", shaderAbierto)) {
             ImGui::InputText("##shaderName", &nombreShaderBase,
                              ImGuiInputTextFlags_AutoSelectAll);
 
@@ -129,17 +133,10 @@ namespace PAG {
                 }
             }
         }
-        ImGui::End();
     }
 
     void GUI::ventanaCamara() {
-        ImGui::SetNextWindowPos(ImVec2(950, 10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(320, 240), ImGuiCond_Once);
-
-        // Forzar a que empiece plegada la primera vez
-        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-
-        if (ImGui::Begin("Camera")) {
+        if (abrirSeccion("Cámara", camaraAbierto)) {
             static int itemActual = 0;
 
             const char* movimientos[] = { "Pan", "Tilt", "Dolly", "Crane", "Orbit", "Zoom" };
@@ -180,14 +177,14 @@ namespace PAG {
                 case TipoMovimiento::DOLLY:
                     ImGui::Text("Direction");
                     // Disposición en cruz identica a la Figura 1
-                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 45.0f);
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 3.0f * ImGui::GetFontSize());
                     if (ImGui::Button("^ Front ^")) { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, 0.0f, -0.1f); }
 
                     if (ImGui::Button("<- Left"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, -0.1f, 0.0f); }
                     ImGui::SameLine();
                     if (ImGui::Button("Right ->")) { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY,  0.1f, 0.0f); }
 
-                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 45.0f);
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 3.0f * ImGui::GetFontSize());
                     if (ImGui::Button("v Back v"))  { notificarObservadoresMovimientoCamara(TipoMovimiento::DOLLY, 0.0f,  0.1f); }
                     break;
 
@@ -211,20 +208,13 @@ namespace PAG {
                     break;
             }
         }
-        ImGui::End();
     }
 
     void GUI::ventanaModelos() {
-        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(320, 480), ImGuiCond_Once);
-
-        // Forzar a que empiece plegada la primera vez
-        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-
-        if (ImGui::Begin("Gestor de Modelos")) {
+        if (abrirSeccion("Gestor de Modelos", modelosAbierto)) {
             // Opción para alternar entre Malla de Alambre y Sólido
             bool alambre = Renderer::getInstance().isModoAlambre();
-            if (ImGui::Checkbox("Modo Alambre (Wireframe)", &alambre)) {
+            if (ImGui::Checkbox("Modo alambre", &alambre)) {
                 Renderer::getInstance().setModoAlambre(alambre);
             }
 
@@ -293,10 +283,10 @@ namespace PAG {
                     ImGui::Text("Propiedades del Material");
 
                     bool matModificado = false;
-                    matModificado |= ImGui::ColorEdit3("Color Ambiente (Ka)", &mat.Ka.x);
-                    matModificado |= ImGui::ColorEdit3("Color Difuso (Kd)",   &mat.Kd.x);
-                    matModificado |= ImGui::ColorEdit3("Color Especular (Ks)", &mat.Ks.x);
-                    matModificado |= ImGui::SliderFloat("Brillo (Shininess)",  &mat.shininess, 1.0f, 128.0f);
+                    matModificado |= ImGui::ColorEdit3("Ka (ambiente)", &mat.Ka.x);
+                    matModificado |= ImGui::ColorEdit3("Kd (difuso)",   &mat.Kd.x);
+                    matModificado |= ImGui::ColorEdit3("Ks (especular)", &mat.Ks.x);
+                    matModificado |= ImGui::SliderFloat("Brillo",  &mat.shininess, 1.0f, 128.0f);
 
                     if (matModificado) {
                         mod->setMaterial(mat);
@@ -306,7 +296,7 @@ namespace PAG {
 
                 ImGui::Spacing();
                 ImGui::Separator();
-                if (ImGui::Button("Eliminar Modelo Seleccionado")) {
+                if (ImGui::Button("Eliminar modelo")) {
                     try {
                         const std::string nombre = modelos[seleccionado]->getNombre();
                         for (auto* listener : listeners) {
@@ -319,18 +309,16 @@ namespace PAG {
                 }
             }
         }
-        ImGui::End();
     }
 
-     void GUI::ventanaLuces() {
-        if (ImGui::Begin("Luces")) {
+    void GUI::ventanaLuces() {
+        if (abrirSeccion("Luces", lucesAbierto)) {
             try {
                 const char* tipos[] = {"Ambiente", "Puntual", "Direccional", "Foco"};
                 auto& renderer = Renderer::getInstance();
 
                 static int tipoNueva = 0;
                 ImGui::Combo("Tipo nuevo", &tipoNueva, tipos, IM_ARRAYSIZE(tipos));
-                ImGui::SameLine();
                 if (ImGui::Button("Crear luz")) {
                     for (auto* listener : listeners) {
                         listener->notificarAnadirLuz(static_cast<TipoLuz>(tipoNueva));
@@ -371,10 +359,12 @@ namespace PAG {
                         cambio |= ImGui::DragFloat3("Posicion", &propiedades.p.x, 0.1f);
                     }
                     if (tipoLuz == TipoLuz::DIRECCIONAL || tipoLuz == TipoLuz::FOCO) {
-                        cambio |= ImGui::DragFloat3("Direccion hacia la escena", &propiedades.d.x, 0.05f);
+                        ImGui::TextUnformatted("Dirección hacia la escena");
+                        ImGui::SetNextItemWidth(-1.0f);
+                        cambio |= ImGui::DragFloat3("##DireccionLuz", &propiedades.d.x, 0.05f);
                     }
                     if (tipoLuz == TipoLuz::FOCO) {
-                        cambio |= ImGui::SliderFloat("Semiamplitud (grados)", &propiedades.gamma, 0.1f, 90.0f);
+                        cambio |= ImGui::SliderFloat("Ángulo (°)", &propiedades.gamma, 0.1f, 90.0f);
                         cambio |= ImGui::SliderFloat("Exponente", &propiedades.s, 0.0f, 128.0f);
                     }
 
@@ -392,7 +382,54 @@ namespace PAG {
                 addMensaje(e.what());
             }
         }
+    }
+
+    void GUI::actualizarEscalaInterfaz() {
+        const float escalaMonitor = ImGui_ImplGlfw_GetContentScaleForWindow(ventanaPrincipal);
+        const float escala = escalaMonitor > 0.0f ? escalaMonitor : 1.0f;
+        if (escala == escalaInterfaz) return;
+
+        ImGuiStyle& estilo = ImGui::GetStyle();
+        estilo = estiloBase;
+        estilo.ScaleAllSizes(escala);
+        estilo.FontScaleDpi = escala;
+        escalaInterfaz = escala;
+    }
+
+    void GUI::dibujarHerramientas() {
+        ventanaCamara();
+        selectorColorTriangular();
+        ventanaShaderProgram();
+        consola();
+    }
+
+    void GUI::dibujarPaneles() {
+        const ImGuiViewport& area = *ImGui::GetMainViewport();
+        const float margen = 8.0f * escalaInterfaz;
+        const float altoDisponible = area.WorkSize.y - 2.0f * margen;
+        const float anchoDisponible = area.WorkSize.x - 2.0f * margen;
+        if (anchoDisponible <= 0.0f || altoDisponible <= 0.0f) return;
+
+        const float ancho = std::min(330.0f * escalaInterfaz, anchoDisponible);
+        const bool dosColumnas = anchoDisponible >= 2.0f * ancho + 360.0f * escalaInterfaz;
+        const ImVec2 posicionEscena(area.WorkPos.x + margen, area.WorkPos.y + margen);
+
+        prepararPanel(posicionEscena, ancho, altoDisponible);
+        if (ImGui::Begin("##Escena", nullptr, flagsPanel)) {
+            ventanaModelos();
+            ventanaLuces();
+            if (!dosColumnas) dibujarHerramientas();
+        }
         ImGui::End();
+
+        if (dosColumnas) {
+            const ImVec2 posicionHerramientas(posicionEscena.x + anchoDisponible - ancho, posicionEscena.y);
+            prepararPanel(posicionHerramientas, ancho, altoDisponible);
+            if (ImGui::Begin("##Herramientas", nullptr, flagsPanel)) {
+                dibujarHerramientas();
+            }
+            ImGui::End();
+        }
     }
 
     /**
@@ -402,14 +439,10 @@ namespace PAG {
         //Preparamos el nuevo fragmento
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
+        actualizarEscalaInterfaz();
         ImGui::NewFrame();
 
-        selectorColorTriangular();
-        ventanaShaderProgram();
-        ventanaCamara();
-        consola();
-        ventanaModelos();
-        ventanaLuces();
+        dibujarPaneles();
 
         //Renderemos ImGui sobre el viewport de OpenGL
         ImGui::Render();

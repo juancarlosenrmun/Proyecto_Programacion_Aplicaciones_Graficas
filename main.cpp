@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 // IMPORTANTE: El include de GLAD debe estar siempre ANTES de el de GLFW
 #include <random>
@@ -86,6 +87,8 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 // del ratón sobre el área de dibujo OpenGL.
 void scroll_callback ( GLFWwindow *window, double xoffset, double yoffset )
 {
+    if (ImGui::GetIO().WantCaptureMouse) return;
+
     PAG::GUI::getInstance().addMensaje("Moviemiento rueda del raton: X = "+std::to_string(xoffset)+" Y = "+std::to_string(yoffset)+"");
     // Arreglo para guardar los componentes (R, G, B, A)
     float colorActual[4];
@@ -149,12 +152,20 @@ int main()
     glfwWindowHint ( GLFW_CONTEXT_VERSION_MAJOR, 4 ); // siguientes activan un contexto
     glfwWindowHint ( GLFW_CONTEXT_VERSION_MINOR, 3 ); // OpenGL Core Profile 4.3.
 
-    // - Definimos el puntero para guardar la dirección de la ventana de la aplicación y
-    // la creamos
-    GLFWwindow *window;
-    // - Tamaño, título de la ventana, en ventana y no en pantalla completa,
-    // sin compartir recursos con otras ventanas.
-    window = glfwCreateWindow ( 1280, 720, "PAG Project", nullptr, nullptr );
+    // La ventana maximizada usa el área útil del monitor. Al restaurarla queda espacio alrededor.
+    int anchoVentana = 1280;
+    int altoVentana = 720;
+    if (GLFWmonitor* monitor = glfwGetPrimaryMonitor()) {
+        int anchoDisponible = 0;
+        int altoDisponible = 0;
+        glfwGetMonitorWorkarea(monitor, nullptr, nullptr, &anchoDisponible, &altoDisponible);
+        if (anchoDisponible > 0 && altoDisponible > 0) {
+            anchoVentana = std::max(1, anchoDisponible * 4 / 5);
+            altoVentana = std::max(1, altoDisponible * 4 / 5);
+        }
+    }
+    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+    GLFWwindow* window = glfwCreateWindow(anchoVentana, altoVentana, "PAG Project", nullptr, nullptr);
     // - Comprobamos si la creación de la ventana ha tenido éxito.
     if ( window == nullptr )
     {
@@ -189,6 +200,11 @@ int main()
     try
     {
         PAG::Renderer::getInstance().inicializar();
+
+        int anchoFramebuffer = 0;
+        int altoFramebuffer = 0;
+        glfwGetFramebufferSize(window, &anchoFramebuffer, &altoFramebuffer);
+        framebuffer_size_callback(window, anchoFramebuffer, altoFramebuffer);
 
         PAG::Renderer::getInstance().mostrarInformacionGL();
 
