@@ -309,6 +309,79 @@ namespace PAG {
         ImGui::End();
     }
 
+     void GUI::ventanaLuces() {
+        if (ImGui::Begin("Luces")) {
+            try {
+                const char* tipos[] = {"Ambiente", "Puntual", "Direccional", "Foco"};
+                auto& renderer = Renderer::getInstance();
+
+                static int tipoNueva = 0;
+                ImGui::Combo("Tipo nuevo", &tipoNueva, tipos, IM_ARRAYSIZE(tipos));
+                ImGui::SameLine();
+                if (ImGui::Button("Crear luz")) {
+                    for (auto* listener : listeners) {
+                        listener->notificarAnadirLuz(static_cast<TipoLuz>(tipoNueva));
+                    }
+                }
+
+                const auto& luces = renderer.getLuces();
+                static std::size_t seleccionada = 0;
+                if (luces.empty()) {
+                    ImGui::TextDisabled("La escena no tiene luces.");
+                } else {
+                    if (seleccionada >= luces.size()) seleccionada = luces.size() - 1;
+                    const auto etiqueta = [&luces, &tipos](std::size_t indice) {
+                        return std::to_string(indice + 1) + ". " +
+                            tipos[static_cast<int>(luces[indice].getTipo())];
+                    };
+
+                    if (ImGui::BeginCombo("Luz", etiqueta(seleccionada).c_str())) {
+                        for (std::size_t i = 0; i < luces.size(); ++i) {
+                            if (ImGui::Selectable(etiqueta(i).c_str(), i == seleccionada)) seleccionada = i;
+                        }
+                        ImGui::EndCombo();
+                    }
+
+                    int tipo = static_cast<int>(luces[seleccionada].getTipo());
+                    PropiedadesLuz propiedades = luces[seleccionada].getPropiedades();
+                    bool cambio = ImGui::Combo("Tipo", &tipo, tipos, IM_ARRAYSIZE(tipos));
+                    cambio |= ImGui::Checkbox("Activa", &propiedades.activa);
+                    const auto tipoLuz = static_cast<TipoLuz>(tipo);
+
+                    if (tipoLuz == TipoLuz::AMBIENTE) {
+                        cambio |= ImGui::ColorEdit3("Ia", &propiedades.Ia.x);
+                    } else {
+                        cambio |= ImGui::ColorEdit3("Id", &propiedades.Id.x);
+                        cambio |= ImGui::ColorEdit3("Is", &propiedades.Is.x);
+                    }
+                    if (tipoLuz == TipoLuz::PUNTUAL || tipoLuz == TipoLuz::FOCO) {
+                        cambio |= ImGui::DragFloat3("Posicion", &propiedades.p.x, 0.1f);
+                    }
+                    if (tipoLuz == TipoLuz::DIRECCIONAL || tipoLuz == TipoLuz::FOCO) {
+                        cambio |= ImGui::DragFloat3("Direccion hacia la escena", &propiedades.d.x, 0.05f);
+                    }
+                    if (tipoLuz == TipoLuz::FOCO) {
+                        cambio |= ImGui::SliderFloat("Semiamplitud (grados)", &propiedades.gamma, 0.1f, 90.0f);
+                        cambio |= ImGui::SliderFloat("Exponente", &propiedades.s, 0.0f, 128.0f);
+                    }
+
+                    if (ImGui::Button("Eliminar luz")) {
+                        for (auto* listener : listeners) {
+                            listener->notificarEliminarLuz(seleccionada);
+                        }
+                    } else if (cambio) {
+                        for (auto* listener : listeners) {
+                            listener->notificarEditarLuz(seleccionada, tipoLuz, propiedades);
+                        }
+                    }
+                }
+            } catch (const std::exception& e) {
+                addMensaje(e.what());
+            }
+        }
+        ImGui::End();
+    }
+
     /**
      * @brief Genera y dibuja los controles de la interfaz en el fotograma actual.
      */
@@ -323,6 +396,7 @@ namespace PAG {
         ventanaCamara();
         consola();
         ventanaModelos();
+        ventanaLuces();
 
         //Renderemos ImGui sobre el viewport de OpenGL
         ImGui::Render();

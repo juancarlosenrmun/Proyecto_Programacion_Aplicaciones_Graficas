@@ -35,7 +35,7 @@ namespace PAG {
             float colorActual[4] = {0.6f, 0.6f, 0.6f, 1.0f}; ///< Estado local del color de fondo.
 
             // Campo para el nombre base del shader
-            std::string nombreShaderBase = "pag04";
+            std::string nombreShaderBase = "../pag08";
 
             // Ventanas
             void selectorColorTriangular();
@@ -45,6 +45,8 @@ namespace PAG {
             void ventanaCamara();
 
             void ventanaModelos();
+
+            void ventanaLuces();
 
             // Estado de la cámara en la GUI
             TipoMovimiento tipoMovimientoActivo = TipoMovimiento::ZOOM;
