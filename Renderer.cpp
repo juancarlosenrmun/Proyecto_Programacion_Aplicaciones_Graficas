@@ -235,25 +235,17 @@ namespace PAG {
     }
 
     void Renderer::notificarCargarModelo(const std::string& rutaArchivo) {
-        try {
-            auto nuevoModelo = std::make_unique<Modelo>(rutaArchivo);
-
-            // Asignar una posición ligeramente aleatoria/desplazada para no solapar los modelos
-            float offset = static_cast<float>(modelos.size()) * 1.5f;
-            nuevoModelo->setPosicion(glm::vec3(offset, 0.0f, 0.0f));
-
-            modelos.push_back(std::move(nuevoModelo));
-            GUI::getInstance().addMensaje("Modelo cargado con éxito: " + rutaArchivo);
-        } catch (const std::exception& e) {
-            GUI::getInstance().addMensaje(e.what());
-        }
+        auto nuevoModelo = std::make_unique<Modelo>(rutaArchivo);
+        const float offset = static_cast<float>(modelos.size()) * 1.5f;
+        nuevoModelo->setPosicion(glm::vec3(offset, 0.0f, 0.0f));
+        modelos.push_back(std::move(nuevoModelo));
     }
 
     void Renderer::notificarEliminarModelo(int indice) {
-        if (indice >= 0 && indice < static_cast<int>(modelos.size())) {
-            GUI::getInstance().addMensaje("Modelo eliminado: " + modelos[indice]->getNombre());
-            modelos.erase(modelos.begin() + indice);
+        if (indice < 0 || static_cast<std::size_t>(indice) >= modelos.size()) {
+            throw std::out_of_range("No existe el modelo indicado.");
         }
+        modelos.erase(modelos.begin() + indice);
     }
 
     void Renderer::notificarTransformarModelo(int indice, glm::vec3 pos, glm::vec3 rot, glm::vec3 esc) {
