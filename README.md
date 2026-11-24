@@ -136,177 +136,98 @@ En esta versión se ha añadido soporte para las propiedades de materiales ópti
 - **Nuevos Métodos Uniform:** Se añadieron los métodos `setUniformVec3` y `setUniformFloat` a la clase `PAG::ShaderProgram` para transmitir las propiedades del material al shader en cada fotograma.
 - **Estado Inicial Plegado:** Se ha configurado la opción `ImGuiCond_Once` con `ImGui::SetNextWindowCollapsed(true)` en los paneles de ImGui para arrancar la aplicación con las ventanas recogidas y mantener despejada la vista principal 3D.
 
+## Versión 08: Iluminación y sombreado
+
+En esta versión se ha añadido soporte para cuatro tipos de fuentes luminosas y se ha modificado el renderizado para acumular la contribución de cada luz activa.
+
+### 1. Gestión de Luces con el Patrón Estrategia
+- **Clase `PAG::Luz`:** Almacena el tipo de fuente y sus propiedades mediante `TipoLuz` y `PropiedadesLuz`.
+- **Aplicadores de luz:** `AplicadorLuzAmbiente`, `AplicadorLuzPuntual`, `AplicadorLuzDireccional` y `AplicadorLuzFoco` seleccionan la subrutina correspondiente y envían al shader las intensidades, posiciones y direcciones de la fuente.
+- **Espacio de visión:** Las posiciones se transforman con la matriz de visión y las direcciones con su parte lineal, de modo que los datos de las luces y de los fragmentos están en el mismo espacio.
+
+### 2. Normales y Modelo de Iluminación
+- **Atributos del vértice:** El `Modelo` almacena la posición y la normal de cada vértice en el VBO. Si el OBJ no proporciona normales para una cara, se calcula su normal geométrica.
+- **Reflexión difusa y especular:** El Fragment Shader calcula la componente difusa mediante el modelo de Lambert y la especular mediante el modelo de Phong, utilizando las propiedades del material (`Ka`, `Kd`, `Ks` y `shininess`).
+- **Tipos de fuente:** Se implementan subrutinas GLSL para la luz ambiente, la puntual, la direccional y el foco. Este último limita la iluminación al cono definido por su dirección y ángulo de apertura.
+
+### 3. Renderizado Multipasada
+- **Una pasada por luz:** `PAG::Renderer::refrescar()` recorre las luces activas y dibuja la escena con la subrutina y los parámetros de cada fuente.
+- **Mezcla de contribuciones:** La primera pasada escribe el color y la profundidad. Las siguientes suman su iluminación mediante `glBlendFunc(GL_SRC_ALPHA, GL_ONE)` y reutilizan la profundidad con las escrituras del búfer Z desactivadas.
+- **Modos de visualización:** El modo alambre conserva la subrutina `colorAlambre()`. Si no hay luces activas, se mantiene la visualización sólida con `colorSolido()`.
+
+### 4. Control de Luces en Dear ImGui
+- **Panel `Luces`:** Permite crear, seleccionar, activar y eliminar fuentes luminosas, así como cambiar su tipo.
+- **Edición de propiedades:** Los controles muestran las propiedades correspondientes al tipo seleccionado, incluidos el color ambiente, las intensidades difusa y especular, la posición, la dirección y los parámetros del foco.
+- **Carga de shaders:** Para utilizar las subrutinas de iluminación, se carga el par de shaders de esta práctica mediante el control **Shader Program**. El nombre base depende de los archivos GLSL incluidos en el proyecto.
+
 ---
 
 ## Diagrama de Clases UML (Actualizado)
 
 ```mermaid
+
 classDiagram
-    class Listener {
-        <<interface>>
-        +~Listener()*
-        +notificarCambioColor(float r, float g, float b, float a)* void
-        +notificarCargarShader(const string& nombreBase) void
-        +notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) void
-        +notificarCargarModelo(const string& rutaArchivo)* void
-        +notificarEliminarModelo(int indice)* void
-        +notificarTransformarModelo(int indice, vec3 pos, vec3 rot, vec3 esc)* void
-    }
+  Listener <|.. Renderer
+  GUI --> Listener : notifica
+  GUI ..> Renderer : consulta la escena
+  Renderer *-- Camara
+  Renderer *-- ShaderProgram
+  Renderer *-- "0..*" Modelo
+  Renderer *-- "0..*" Luz
+  Modelo *-- Material
+  Modelo ..> Vertice : prepara el VBO
+  Luz *-- PropiedadesLuz
+  Luz --> TipoLuz
+  Luz ..> AplicadorLuz : selecciona
+  AplicadorLuz ..> ShaderProgram : configura
+  AplicadorLuz <|-- AplicadorLuzAmbiente
+  AplicadorLuz <|-- AplicadorLuzPuntual
+  AplicadorLuz <|-- AplicadorLuzDireccional
+  AplicadorLuz <|-- AplicadorLuzFoco
 
-    class TipoMovimiento {
-        <<enumeration>>
-        PAN
-        TILT
-        DOLLY
-        CRANE
-        ORBIT
-        ZOOM
-    }
-
-    class Material {
-        <<struct>>
-        +Ka: vec3
-        +Kd: vec3
-        +Ks: vec3
-        +shininess: float
-    }
-
-    class Vertice {
-        <<struct>>
-        +posicion: vec3
-        +color: vec3
-    }
-
-    class Modelo {
-        -nombre: string
-        -material: Material
-        -idVAO: GLuint
-        -idVBO: GLuint
-        -idIBO: GLuint
-        -numIndices: GLsizei
-        -posicion: vec3
-        -rotacion: vec3
-        -escala: vec3
-        -crearBuffers(const vector~Vertice~& vertices, const vector~GLuint~& indices) void
-        +Modelo(const string& rutaArchivo)
-        +~Modelo()
-        +dibujar(const ShaderProgram& shader) void
-        +getMatrizModelado() const mat4
-        +getMaterial() Material&
-        +setMaterial(const Material& mat) void
-        +getNombre() const string&
-        +getPosicion() vec3
-        +getRotacion() vec3
-        +getEscala() vec3
-        +setPosicion(const vec3& pos) void
-        +setRotacion(const vec3& rot) void
-        +setEscala(const vec3& esc) void
-    }
-
-    class ShaderProgram {
-        -idVS: GLuint
-        -idFS: GLuint
-        -idSP: GLuint
-        -cargarArchivoTexto(const string& rutaArchivo) string
-        -comprobarCompilacionShader(GLuint shader, const string& tipoShader) void
-        -comprobarEnlazadoProgram(GLuint program) void
-        -liberarRecursos() void
-        +ShaderProgram()
-        +~ShaderProgram()
-        +cargarDesdeArchivos(const string& nombreBase) void
-        +activar() const void
-        +estaListo() const bool
-        +getIdProgram() const GLuint
-        +setUniformMat4(const string& nombre, const mat4& matriz) const void
-        +setUniformVec3(const string& nombre, const vec3& vector) const void
-        +setUniformFloat(const string& nombre, float valor) const void
-    }
-
-    class Camara {
-        -posicion: vec3
-        -puntoInteres: vec3
-        -vectorArriba: vec3
-        -fov: float
-        -aspectRatio: float
-        -zNear: float
-        -zFar: float
-        +getMatrizVision() const mat4
-        +getMatrizProyeccion() const mat4
-        +pan(float delta) void
-        +tilt(float delta) void
-        +dolly(float deltaX, float deltaY) void
-        +crane(float delta) void
-        +orbit(float deltaLat, float deltaLon) void
-        +zoom(float deltaFov) void
-    }
-
-    class Renderer {
-        -static instance: Renderer*
-        -camara: Camara
-        -movimientoActivo: TipoMovimiento
-        -sensibilidadRaton: float
-        -shaderProgram: ShaderProgram
-        -modelos: vector~unique_ptr~Modelo~~
-        -modoAlambre: bool
-        -Renderer()
-        +~Renderer()
-        +static getInstance() Renderer&
-        +inicializar() void
-        +refrescar() void
-        +establecerViewport(int x, int y, int width, int height) void
-        +establecerColor(float r, float g, float b, float a) void
-        +obtenerColor(float colorActual[4]) void
-        +mostrarInformacionGL() void
-        +getCamara() Camara&
-        +getModelos() const vector~unique_ptr~Modelo~~&
-        +isModoAlambre() const bool
-        +setModoAlambre(bool activo) void
-        +notificarCambioColor(float r, float g, float b, float a) void
-        +notificarCargarShader(const string& nombreBase) void
-        +notificarMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) void
-        +notificarCargarModelo(const string& rutaArchivo) void
-        +notificarEliminarModelo(int indice) void
-        +notificarTransformarModelo(int indice, vec3 pos, vec3 rot, vec3 esc) void
-        +aplicarMovimientoRaton(float deltaX, float deltaY) void
-    }
-
-    class GUI {
-        -static instance: GUI*
-        -mensajes: vector~string~
-        -autoScroll: bool
-        -colorActual: float[4]
-        -nombreShaderBase: string
-        -tipoMovimientoActivo: TipoMovimiento
-        -fovAnterior: float
-        -listeners: vector~Listener*~
-        -GUI()
-        -selectorColorTriangular() void
-        -consola() void
-        -ventanaShaderProgram() void
-        -ventanaCamara() void
-        -ventanaModelos() void
-        -notificarObservadoresColor() void
-        -notificarObservadoresShader() void
-        -notificarObservadoresMovimientoCamara(TipoMovimiento tipo, float delta1, float delta2) void
-        +~GUI()
-        +static getInstance() GUI&
-        +inicializar(GLFWwindow* window) void
-        +render() void
-        +finalizar() void
-        +procesarBotonRaton(int button, int action) void
-        +addMensaje(const string& mensaje) void
-        +addListener(Listener* listener) void
-        +removeListener(Listener* listener) void
-    }
-
-    Listener <|.. Renderer : Implementa (Observador Concreto)
-    GUI "1" o-- "*" Listener : Notifica (Sujeto)
-    Renderer "1" *-- "1" Camara : Composición
-    Renderer "1" *-- "1" ShaderProgram : Composición
-    Renderer "1" *-- "*" Modelo : Gestiona
-    Modelo "1" *-- "1" Material : Contiene
-    Modelo "1" *-- "*" Vertice : Agrupa
-    Modelo ..> ShaderProgram : Recibe en dibujar()
-    Renderer ..> TipoMovimiento : Usa
-    GUI ..> TipoMovimiento : Usa
+  class Listener {
+    <<interface>>
+    +notificarAnadirLuz(tipo)
+    +notificarEditarLuz(indice, tipo, propiedades)
+    +notificarEliminarLuz(indice)
+  }
+  class Renderer {
+    +refrescar()
+    +getLuces()
+    -dibujarModelos()
+  }
+  class GUI {
+    +render()
+    -ventanaLuces()
+  }
+  class Luz {
+    -TipoLuz tipo
+    -PropiedadesLuz propiedades
+    +aplicar(mVis, sp)
+  }
+  class TipoLuz {
+    <<enumeration>>
+    AMBIENTE
+    PUNTUAL
+    DIRECCIONAL
+    FOCO
+  }
+  class AplicadorLuz {
+    <<abstract>>
+    +aplicarLuz(propiedades, mVis, sp)
+  }
+  class ShaderProgram {
+    +activar()
+    +seleccionarSubrutinaFragmento(nombre)
+  }
+  class PropiedadesLuz {
+    +bool activa
+    +vec3 Ia
+    +vec3 Id
+    +vec3 Is
+    +vec3 p
+    +vec3 d
+    +float gamma
+    +float s
+  }
 ```
