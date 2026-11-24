@@ -20,7 +20,9 @@ add_executable(${PROJECT_NAME} ${MY_FILES} ${GLAD_FILES} ${IMGUI_FILES}
         Camara.cpp
         Camara.h
         Modelo.cpp
-        Modelo.h)
+        Modelo.h
+        Luz.cpp
+        Luz.h)
 
 target_include_directories( ${PROJECT_NAME} PUBLIC GLAD/include ImGui/include )
 
