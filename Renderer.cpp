@@ -23,7 +23,31 @@ namespace PAG {
     /**
      * @brief Constructor por defecto
      */
-    Renderer::Renderer()= default;
+    Renderer::Renderer() {
+        PropiedadesLuz ambiente;
+        ambiente.Ia = glm::vec3(0.45f);
+        luces.emplace_back(TipoLuz::AMBIENTE, ambiente);
+
+        PropiedadesLuz puntual;
+        puntual.p = glm::vec3(3.0f, 2.0f, 4.0f);
+        puntual.Id = glm::vec3(0.65f, 0.55f, 0.45f);
+        puntual.Is = glm::vec3(0.4f);
+        luces.emplace_back(TipoLuz::PUNTUAL, puntual);
+
+        PropiedadesLuz direccional;
+        direccional.d = glm::vec3(1.0f, -0.5f, -1.0f);
+        direccional.Id = glm::vec3(0.25f, 0.35f, 0.55f);
+        direccional.Is = glm::vec3(0.2f);
+        luces.emplace_back(TipoLuz::DIRECCIONAL, direccional);
+
+        PropiedadesLuz foco;
+        foco.p = glm::vec3(-3.0f, 3.0f, 4.0f);
+        foco.d = -foco.p;
+        foco.gamma = 30.0f;
+        foco.Id = glm::vec3(0.35f, 0.2f, 0.35f);
+        foco.Is = glm::vec3(0.25f);
+        luces.emplace_back(TipoLuz::FOCO, foco);
+    }
 
     /**
      * @brief Destructor por defecto
