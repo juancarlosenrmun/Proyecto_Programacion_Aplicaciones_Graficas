@@ -55,6 +55,13 @@ namespace PAG {
         private:
             TipoLuz tipo;
             PropiedadesLuz propiedades;
+
+        public:
+            explicit Luz(TipoLuz tipo, const PropiedadesLuz& propiedades = {});
+
+            TipoLuz getTipo() const { return tipo; }
+            const PropiedadesLuz& getPropiedades() const { return propiedades; }
+            void aplicar(const glm::mat4& mVis, const ShaderProgram& sp) const;
     };
 }
 
