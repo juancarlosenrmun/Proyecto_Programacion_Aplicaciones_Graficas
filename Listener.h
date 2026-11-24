@@ -7,6 +7,9 @@
 
 #ifndef PR02_LISTENER_H
 #define PR02_LISTENER_H
+#include<cstddef>
+#include<string>
+#include "Luz.h"
 #include "Camara.h"
 
 
@@ -42,6 +45,11 @@ namespace PAG {
             virtual void notificarCargarModelo(const std::string& rutaArchivo) = 0;
             virtual void notificarEliminarModelo(int indice) = 0;
             virtual void notificarTransformarModelo(int indice, glm::vec3 pos, glm::vec3 rot, glm::vec3 esc) = 0;
+
+            virtual void notificarAnadirLuz(TipoLuz tipo) = 0;
+            virtual void notificarEditarLuz(std::size_t indice, TipoLuz tipo,
+                                          const PropiedadesLuz& propiedades) = 0;
+            virtual void notificarEliminarLuz(std::size_t indice) = 0;
     };
 };
 
