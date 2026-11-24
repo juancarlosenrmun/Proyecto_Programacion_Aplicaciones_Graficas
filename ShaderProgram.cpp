@@ -108,6 +108,25 @@ namespace PAG {
         }
     }
 
+    bool ShaderProgram::tieneSubrutinaFragmento(const std::string& nombre) const {
+        if (!estaListo()) return false;
+
+        GLint ubicaciones = 0;
+        glGetProgramStageiv(idSP, GL_FRAGMENT_SHADER,
+                            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS, &ubicaciones);
+        return ubicaciones == 1 &&
+               glGetSubroutineIndex(idSP, GL_FRAGMENT_SHADER, nombre.c_str()) != GL_INVALID_INDEX;
+    }
+
+    void ShaderProgram::seleccionarSubrutinaFragmento(const std::string& nombre) const {
+        const GLuint indice = glGetSubroutineIndex(idSP, GL_FRAGMENT_SHADER, nombre.c_str());
+        if (indice == GL_INVALID_INDEX) {
+            throw std::runtime_error("Subrutina de fragmentos desconocida: " + nombre);
+        }
+
+        glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &indice);
+    }
+
     void ShaderProgram::setUniformVec3(const std::string& nombre, const glm::vec3& vector) const {
         if (idSP == 0) return;
         GLint location = glGetUniformLocation(idSP, nombre.c_str());
