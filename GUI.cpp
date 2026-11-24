@@ -231,11 +231,16 @@ namespace PAG {
             ImGui::Separator();
             ImGui::Text("Cargar Modelo OBJ");
 
-            static std::string rutaModelo = "../modelos/triangulo.obj";
+            static std::string rutaModelo = "../modelos/dado.obj";
             ImGui::InputText("Ruta ##RutaOBJ", &rutaModelo);
             if (ImGui::Button("Cargar OBJ")) {
-                for (auto* listener : listeners) {
-                    listener->notificarCargarModelo(rutaModelo);
+                try {
+                    for (auto* listener : listeners) {
+                        listener->notificarCargarModelo(rutaModelo);
+                    }
+                    addMensaje("Modelo cargado: " + rutaModelo);
+                } catch (const std::exception& e) {
+                    addMensaje(e.what());
                 }
             }
 
