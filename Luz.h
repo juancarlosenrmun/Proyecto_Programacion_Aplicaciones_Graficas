@@ -8,6 +8,15 @@
 #include "ShaderProgram.h"
 
 namespace PAG {
+
+    enum class TipoLuz {
+        AMBIENTE = 0,
+        PUNTUAL = 1,
+        DIRECCIONAL = 2,
+        FOCO = 3,
+        NUM_TIPOS = 4
+    };
+
     class Luz {
     };
 }
