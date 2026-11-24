@@ -34,4 +34,8 @@ namespace PAG {
             throw std::invalid_argument("El foco requiere 0 < gamma <= 90 grados y s >= 0.");
              }
     }
+
+    void Luz::aplicar(const glm::mat4& mVis, const ShaderProgram& sp) const {
+        aplicadores[static_cast<std::size_t>(tipo)]->aplicarLuz(propiedades, mVis, sp);
+    }
 }
