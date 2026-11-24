@@ -104,8 +104,8 @@ namespace PAG {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, posicion));
         glEnableVertexAttribArray(0);
 
-        // Atributo 1: Color
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, color));
+        // Atributo 1: Normal
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertice), (void*)offsetof(Vertice, normal));
         glEnableVertexAttribArray(1);
 
         glBindVertexArray(0);
