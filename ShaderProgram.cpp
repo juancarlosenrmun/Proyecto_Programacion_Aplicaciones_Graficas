@@ -67,29 +67,30 @@ namespace PAG {
         std::string codigoVS = cargarArchivoTexto(rutaVS);
         std::string codigoFS = cargarArchivoTexto(rutaFS);
 
-        // Liberar programa anterior si existía
-        liberarRecursos();
+        // El programa anterior sigue disponible si falla la compilación o el enlace.
+        ShaderProgram candidato;
 
-        // 1. Vertex Shader
-        idVS = glCreateShader(GL_VERTEX_SHADER);
+        candidato.idVS = glCreateShader(GL_VERTEX_SHADER);
         const GLchar* fuenteVS = codigoVS.c_str();
-        glShaderSource(idVS, 1, &fuenteVS, nullptr);
-        glCompileShader(idVS);
-        comprobarCompilacionShader(idVS, "Vertex Shader (" + rutaVS + ")");
+        glShaderSource(candidato.idVS, 1, &fuenteVS, nullptr);
+        glCompileShader(candidato.idVS);
+        comprobarCompilacionShader(candidato.idVS, "Vertex Shader (" + rutaVS + ")");
 
-        // 2. Fragment Shader
-        idFS = glCreateShader(GL_FRAGMENT_SHADER);
+        candidato.idFS = glCreateShader(GL_FRAGMENT_SHADER);
         const GLchar* fuenteFS = codigoFS.c_str();
-        glShaderSource(idFS, 1, &fuenteFS, nullptr);
-        glCompileShader(idFS);
-        comprobarCompilacionShader(idFS, "Fragment Shader (" + rutaFS + ")");
+        glShaderSource(candidato.idFS, 1, &fuenteFS, nullptr);
+        glCompileShader(candidato.idFS);
+        comprobarCompilacionShader(candidato.idFS, "Fragment Shader (" + rutaFS + ")");
 
-        // 3. Shader Program
-        idSP = glCreateProgram();
-        glAttachShader(idSP, idVS);
-        glAttachShader(idSP, idFS);
-        glLinkProgram(idSP);
-        comprobarEnlazadoProgram(idSP);
+        candidato.idSP = glCreateProgram();
+        glAttachShader(candidato.idSP, candidato.idVS);
+        glAttachShader(candidato.idSP, candidato.idFS);
+        glLinkProgram(candidato.idSP);
+        comprobarEnlazadoProgram(candidato.idSP);
+
+        std::swap(idVS, candidato.idVS);
+        std::swap(idFS, candidato.idFS);
+        std::swap(idSP, candidato.idSP);
     }
 
     void ShaderProgram::activar() const {
@@ -105,6 +106,25 @@ namespace PAG {
                 glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matriz));
             }
         }
+    }
+
+    bool ShaderProgram::tieneSubrutinaFragmento(const std::string& nombre) const {
+        if (!estaListo()) return false;
+
+        GLint ubicaciones = 0;
+        glGetProgramStageiv(idSP, GL_FRAGMENT_SHADER,
+                            GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS, &ubicaciones);
+        return ubicaciones == 1 &&
+               glGetSubroutineIndex(idSP, GL_FRAGMENT_SHADER, nombre.c_str()) != GL_INVALID_INDEX;
+    }
+
+    void ShaderProgram::seleccionarSubrutinaFragmento(const std::string& nombre) const {
+        const GLuint indice = glGetSubroutineIndex(idSP, GL_FRAGMENT_SHADER, nombre.c_str());
+        if (indice == GL_INVALID_INDEX) {
+            throw std::runtime_error("Subrutina de fragmentos desconocida: " + nombre);
+        }
+
+        glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &indice);
     }
 
     void ShaderProgram::setUniformVec3(const std::string& nombre, const glm::vec3& vector) const {

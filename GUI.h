@@ -35,9 +35,22 @@ namespace PAG {
             float colorActual[4] = {0.6f, 0.6f, 0.6f, 1.0f}; ///< Estado local del color de fondo.
 
             // Campo para el nombre base del shader
-            std::string nombreShaderBase = "pag04";
+            std::string nombreShaderBase = "../pag08";
 
-            // Ventanas
+            GLFWwindow* ventanaPrincipal = nullptr;
+            ImGuiStyle estiloBase;
+            float escalaInterfaz = 0.0f;
+
+            bool modelosAbierto = false;
+            bool lucesAbierto = false;
+            bool camaraAbierto = false;
+            bool colorAbierto = false;
+            bool shaderAbierto = false;
+            bool consolaAbierto = false;
+
+            void actualizarEscalaInterfaz();
+            void dibujarPaneles();
+            void dibujarHerramientas();
             void selectorColorTriangular();
             void consola();
             void ventanaShaderProgram();
@@ -45,6 +58,8 @@ namespace PAG {
             void ventanaCamara();
 
             void ventanaModelos();
+
+            void ventanaLuces();
 
             // Estado de la cámara en la GUI
             TipoMovimiento tipoMovimientoActivo = TipoMovimiento::ZOOM;

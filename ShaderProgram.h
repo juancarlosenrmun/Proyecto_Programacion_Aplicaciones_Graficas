@@ -36,6 +36,10 @@ namespace PAG {
             // Activa el shader program en la GPU (glUseProgram)
             void activar() const;
 
+            // Subrutinas
+            bool tieneSubrutinaFragmento(const std::string& nombre) const;
+            void seleccionarSubrutinaFragmento(const std::string& nombre) const;
+
             // Consulta si el programa está compilado y listo
             bool estaListo() const { return idSP != 0; }
 

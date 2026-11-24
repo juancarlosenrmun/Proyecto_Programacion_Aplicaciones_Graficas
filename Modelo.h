@@ -16,7 +16,7 @@ namespace PAG {
 
     struct Vertice {
         glm::vec3 posicion;
-        glm::vec3 color; // Color asignado/interpolado
+        glm::vec3 normal{0.0f}; // Color asignado/interpolado
     };
 
     struct Material {
