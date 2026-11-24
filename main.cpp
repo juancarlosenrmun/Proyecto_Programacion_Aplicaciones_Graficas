@@ -192,9 +192,7 @@ int main()
 
         PAG::Renderer::getInstance().mostrarInformacionGL();
 
-        //PAG::Renderer::getInstance().notificarCargarShader("../pag04");
-
-        PAG::GUI::getInstance().addMensaje("Shader y modelo cargados con exito");
+        PAG::GUI::getInstance().addMensaje("Renderizado inicializado.");
     }catch (std::exception &e)
     {
         PAG::GUI::getInstance().addMensaje(e.what());
@@ -219,6 +217,10 @@ int main()
 
     // - Una vez terminado el ciclo de eventos, liberar recursos
     std::cout << "Finishing application pag prueba" << std::endl;
+
+    PAG::Renderer::destruirInstancia();
+    PAG::GUI::getInstance().finalizar();
+
     glfwDestroyWindow ( window ); // - Cerramos y destruimos la ventana de la aplicación.
     window = nullptr;
     glfwTerminate (); // - Liberamos los recursos que ocupaba GLFW.
