@@ -1,13 +1,16 @@
-//
-// Created by Juank on 24/11/2026.
-//
-
 #ifndef PROYECTO_PAG_LUZ_H
 #define PROYECTO_PAG_LUZ_H
 
+#include <glm/glm.hpp>
+#include <array>
+#include <memory>
+#include <string>
+#include "ShaderProgram.h"
 
-class Luz {
-};
+namespace PAG {
+    class Luz {
+    };
+}
 
 
 #endif //PROYECTO_PAG_LUZ_H
