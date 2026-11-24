@@ -307,8 +307,14 @@ namespace PAG {
                 ImGui::Spacing();
                 ImGui::Separator();
                 if (ImGui::Button("Eliminar Modelo Seleccionado")) {
-                    for (auto* listener : listeners) {
-                        listener->notificarEliminarModelo(seleccionado);
+                    try {
+                        const std::string nombre = modelos[seleccionado]->getNombre();
+                        for (auto* listener : listeners) {
+                            listener->notificarEliminarModelo(seleccionado);
+                        }
+                        addMensaje("Modelo eliminado: " + nombre);
+                    } catch (const std::exception& e) {
+                        addMensaje(e.what());
                     }
                 }
             }
