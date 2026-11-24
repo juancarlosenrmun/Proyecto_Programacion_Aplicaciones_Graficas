@@ -114,17 +114,19 @@ namespace PAG {
     void GUI::ventanaShaderProgram() {
         ImGui::SetNextWindowPos(ImVec2(10, 580), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(320, 120), ImGuiCond_Once);
-
-        // Forzar a que empiece plegada la primera vez
         ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
 
         if (ImGui::Begin("Shader Program")) {
-            // Caja de texto vinculada a std::string con selección automática
-            ImGui::InputText("##shaderName", &nombreShaderBase, ImGuiInputTextFlags_AutoSelectAll);
+            ImGui::InputText("##shaderName", &nombreShaderBase,
+                             ImGuiInputTextFlags_AutoSelectAll);
 
-            // Botón de carga
             if (ImGui::Button("Load")) {
-                notificarObservadoresShader();
+                try {
+                    notificarObservadoresShader();
+                    addMensaje("Shader Program '" + nombreShaderBase + "' cargado.");
+                } catch (const std::exception& e) {
+                    addMensaje(e.what());
+                }
             }
         }
         ImGui::End();
