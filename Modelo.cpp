@@ -5,6 +5,7 @@
 #include "tiny_obj_loader.h"
 #include "Modelo.h"
 #include <stdexcept>
+#include <cstddef>
 
 namespace PAG {
 
@@ -30,30 +31,49 @@ namespace PAG {
 
         // Recorremos todas las formas (shapes) del modelo
         for (const auto& shape : shapes) {
-            for (const auto& index : shape.mesh.indices) {
-                Vertice vert;
-                vert.posicion = glm::vec3(
-                    attrib.vertices[3 * index.vertex_index + 0],
-                    attrib.vertices[3 * index.vertex_index + 1],
-                    attrib.vertices[3 * index.vertex_index + 2]
-                );
+            const auto& indices = shape.mesh.indices;
+            if (indices.size() % 3 != 0) {
+                throw std::runtime_error("La malla OBJ no está triangulada.");
+            }
 
-                // Si el archivo OBJ tiene información de normales, las usamos para generar un color RGB
-                if (!attrib.normals.empty() && index.normal_index >= 0) {
-                    glm::vec3 normal(
-                        attrib.normals[3 * index.normal_index + 0],
-                        attrib.normals[3 * index.normal_index + 1],
-                        attrib.normals[3 * index.normal_index + 2]
-                    );
-                    // Mapeamos la normal del rango [-1.0, 1.0] al rango de color RGB [0.0, 1.0]
-                    vert.color = glm::normalize(normal) * 0.5f + glm::vec3(0.5f);
-                } else {
-                    // Si no tiene normales, usamos un color basado en la posición
-                    vert.color = glm::abs(glm::normalize(vert.posicion));
+            for (std::size_t i = 0; i < indices.size(); i += 3) {
+                Vertice triangulo[3]{};
+                bool necesitaNormal[3]{};
+
+                for (std::size_t j = 0; j < 3; ++j) {
+                    const auto& indice = indices[i + j];
+                    auto& vertice = triangulo[j];
+                    if (indice.vertex_index < 0 ||
+                        static_cast<std::size_t>(indice.vertex_index) >= attrib.vertices.size() / 3) {
+                        throw std::runtime_error("Índice de posición inválido en el OBJ.");
+                    }
+
+                    const auto basePos = 3 * static_cast<std::size_t>(indice.vertex_index);
+                    vertice.posicion = glm::vec3(attrib.vertices[basePos], attrib.vertices[basePos + 1],
+                                                 attrib.vertices[basePos + 2]);
+                    if (indice.normal_index >= 0 &&
+                        static_cast<std::size_t>(indice.normal_index) < attrib.normals.size() / 3) {
+                        const auto baseNormal = 3 * static_cast<std::size_t>(indice.normal_index);
+                        vertice.normal = glm::vec3(attrib.normals[baseNormal], attrib.normals[baseNormal + 1],
+                                                  attrib.normals[baseNormal + 2]);
+                    }
+                    necesitaNormal[j] = !(glm::dot(vertice.normal, vertice.normal) > 0.0f);
                 }
 
-                verticesTotales.push_back(vert);
-                indicesTotales.push_back(idx++);
+                if (necesitaNormal[0] || necesitaNormal[1] || necesitaNormal[2]) {
+                    const glm::vec3 normalCara = glm::cross(triangulo[1].posicion - triangulo[0].posicion,
+                                                           triangulo[2].posicion - triangulo[0].posicion);
+                    for (std::size_t j = 0; j < 3; ++j) {
+                        if (necesitaNormal[j]) triangulo[j].normal = normalCara;
+                    }
+                }
+
+                for (auto& vertice : triangulo) {
+                    const float longitud2 = glm::dot(vertice.normal, vertice.normal);
+                    if (longitud2 > 0.0f) vertice.normal = glm::normalize(vertice.normal);
+                    verticesTotales.push_back(vertice);
+                    indicesTotales.push_back(idx++);
+                }
             }
         }
 
