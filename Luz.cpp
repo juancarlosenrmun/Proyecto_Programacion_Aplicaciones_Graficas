@@ -38,4 +38,37 @@ namespace PAG {
     void Luz::aplicar(const glm::mat4& mVis, const ShaderProgram& sp) const {
         aplicadores[static_cast<std::size_t>(tipo)]->aplicarLuz(propiedades, mVis, sp);
     }
+
+    void AplicadorLuzAmbiente::aplicarLuz(const PropiedadesLuz& luz,
+                                       const glm::mat4&, const ShaderProgram& sp) const {
+        sp.seleccionarSubrutinaFragmento("luzAmbiente");
+        sp.setUniformVec3("uIa", luz.Ia);
+    }
+
+    void AplicadorLuzPuntual::aplicarLuz(const PropiedadesLuz& luz,
+                                       const glm::mat4& mVis, const ShaderProgram& sp) const {
+        sp.seleccionarSubrutinaFragmento("luzPuntual");
+        sp.setUniformVec3("uId", luz.Id);
+        sp.setUniformVec3("uIs", luz.Is);
+        sp.setUniformVec3("uPosLuzV", glm::vec3(mVis * glm::vec4(luz.p, 1.0f)));
+    }
+
+    void AplicadorLuzDireccional::aplicarLuz(const PropiedadesLuz& luz,
+                                           const glm::mat4& mVis, const ShaderProgram& sp) const {
+        sp.seleccionarSubrutinaFragmento("luzDireccional");
+        sp.setUniformVec3("uId", luz.Id);
+        sp.setUniformVec3("uIs", luz.Is);
+        sp.setUniformVec3("uDirLuzV", glm::normalize(glm::mat3(mVis) * luz.d));
+    }
+
+    void AplicadorLuzFoco::aplicarLuz(const PropiedadesLuz& luz,
+                                    const glm::mat4& mVis, const ShaderProgram& sp) const {
+        sp.seleccionarSubrutinaFragmento("luzFoco");
+        sp.setUniformVec3("uId", luz.Id);
+        sp.setUniformVec3("uIs", luz.Is);
+        sp.setUniformVec3("uPosLuzV", glm::vec3(mVis * glm::vec4(luz.p, 1.0f)));
+        sp.setUniformVec3("uDirLuzV", glm::normalize(glm::mat3(mVis) * luz.d));
+        sp.setUniformFloat("uCosGamma", std::max(0.0f, std::cos(glm::radians(luz.gamma))));
+        sp.setUniformFloat("uExponenteFoco", luz.s);
+    }
 }
