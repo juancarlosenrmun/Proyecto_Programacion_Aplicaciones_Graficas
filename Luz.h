@@ -28,6 +28,32 @@ namespace PAG {
         float s      = 8.0f;                           // Exponente de bordes suaves
     };
 
+    class AplicadorLuz {
+    public:
+        virtual ~AplicadorLuz() = default;
+        virtual void aplicarLuz(const PropiedadesLuz& p, const glm::mat4& mVis, const ShaderProgram& sp) const = 0;
+    };
+
+    class AplicadorLuzAmbiente : public AplicadorLuz {
+    public:
+        void aplicarLuz(const PropiedadesLuz& p, const glm::mat4& mVis, const ShaderProgram& sp) const override;
+    };
+
+    class AplicadorLuzPuntual : public AplicadorLuz {
+    public:
+        void aplicarLuz(const PropiedadesLuz& p, const glm::mat4& mVis, const ShaderProgram& sp) const override;
+    };
+
+    class AplicadorLuzDireccional : public AplicadorLuz {
+    public:
+        void aplicarLuz(const PropiedadesLuz& p, const glm::mat4& mVis, const ShaderProgram& sp) const override;
+    };
+
+    class AplicadorLuzFoco : public AplicadorLuz {
+    public:
+        void aplicarLuz(const PropiedadesLuz& p, const glm::mat4& mVis, const ShaderProgram& sp) const override;
+    };
+
     class Luz {
     };
 }
