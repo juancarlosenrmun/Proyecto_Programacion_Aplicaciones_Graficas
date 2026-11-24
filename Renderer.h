@@ -38,6 +38,9 @@ namespace PAG
 
             ShaderProgram shaderProgram;
 
+            std::vector<Luz> luces;
+            void dibujarModelos();
+
             // Colección de modelos 3D en la escena
             std::vector<std::unique_ptr<Modelo>> modelos;
             bool modoAlambre = true; ///< Modo de dibujado (GL_LINE/GL_FILL)
@@ -48,6 +51,14 @@ namespace PAG
         public:
             ~Renderer();
             static Renderer& getInstance();
+
+            static void destruirInstancia();
+
+            const std::vector<Luz>& getLuces() const { return luces; }
+            void notificarAnadirLuz(TipoLuz tipo) override;
+            void notificarEditarLuz(std::size_t indice, TipoLuz tipo,
+                                  const PropiedadesLuz& propiedades) override;
+            void notificarEliminarLuz(std::size_t indice) override;
 
             void inicializar();
             void refrescar();

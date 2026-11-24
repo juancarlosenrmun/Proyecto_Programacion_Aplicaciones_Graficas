@@ -65,6 +65,14 @@ namespace PAG {
         return *instance;
     }
 
+    void Renderer::destruirInstancia() {
+        if (instance) {
+            GUI::getInstance().removeListener(instance);
+            delete instance;
+            instance = nullptr;
+        }
+    }
+
     /**
      * @brief Configura el estado inicial de OpenGL (color de fondo por defecto y test de profundidad) y oregistramos el observador.
      */
@@ -73,7 +81,10 @@ namespace PAG {
         PAG::GUI::getInstance().addListener(this);
         // Configuración inicial del estado de OpenGL
         glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
-        glEnable ( GL_DEPTH_TEST );
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
         glEnable ( GL_MULTISAMPLE );
 
     }
@@ -83,41 +94,74 @@ namespace PAG {
      */
     void Renderer::refrescar() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (!shaderProgram.estaListo() || modelos.empty()) return;
 
-        if (shaderProgram.estaListo()) {
-            shaderProgram.activar(); //Usar glUseProgram antes de configurar subrutinas
+        shaderProgram.activar();
+        const glm::mat4 mVis = camara.getMatrizVision();
+        shaderProgram.setUniformMat4("mVis", mVis);
+        shaderProgram.setUniformMat4("mProy", camara.getMatrizProyeccion());
 
-            GLuint programId = shaderProgram.getIdProgram();
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPolygonMode(GL_FRONT_AND_BACK, modoAlambre ? GL_LINE : GL_FILL);
 
-            // 1. Obtener índices de las subrutinas
-            GLuint idxAlambre = glGetSubroutineIndex(programId, GL_FRAGMENT_SHADER, "colorAlambre");
-            GLuint idxSolido  = glGetSubroutineIndex(programId, GL_FRAGMENT_SHADER, "colorSolido");
+        const bool admiteLuces = !modoAlambre &&
+            shaderProgram.tieneSubrutinaFragmento("luzAmbiente") &&
+            shaderProgram.tieneSubrutinaFragmento("luzPuntual") &&
+            shaderProgram.tieneSubrutinaFragmento("luzDireccional") &&
+            shaderProgram.tieneSubrutinaFragmento("luzFoco");
 
-            // 2. Seleccionar índice según el modo activo
-            GLuint subrutinaActiva = modoAlambre ? idxAlambre : idxSolido;
+        bool primeraPasada = true;
+        if (admiteLuces) {
+            for (const auto& luz : luces) {
+                if (!luz.getPropiedades().activa) continue;
 
-            // 3. Activar subrutina en la GPU
-            glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &subrutinaActiva);
+                luz.aplicar(mVis, shaderProgram);
+                dibujarModelos();
 
-            // Configurar tipo de rasterizado
-            glPolygonMode(GL_FRONT_AND_BACK, modoAlambre ? GL_LINE : GL_FILL);
-
-            // Uniforms globales de cámara
-            shaderProgram.setUniformMat4("mVis", camara.getMatrizVision());
-            shaderProgram.setUniformMat4("mProy", camara.getMatrizProyeccion());
-
-            // Renderizado de modelos
-            for (auto& modelo : modelos) {
-                // Enviar propiedades del material del modelo
-                Material mat = modelo->getMaterial();
-                shaderProgram.setUniformVec3("uKa", mat.Ka);
-                shaderProgram.setUniformVec3("uKd", mat.Kd);
-                shaderProgram.setUniformVec3("uKs", mat.Ks);
-                shaderProgram.setUniformFloat("uShininess", mat.shininess);
-
-                modelo->dibujar(shaderProgram);
+                if (primeraPasada) {
+                    primeraPasada = false;
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+                    glDepthMask(GL_FALSE);
+                }
             }
         }
+
+        if (primeraPasada) {
+            const char* subrutina = modoAlambre ? "colorAlambre" : "colorSolido";
+            if (shaderProgram.tieneSubrutinaFragmento(subrutina)) {
+                shaderProgram.seleccionarSubrutinaFragmento(subrutina);
+            }
+            dibujarModelos();
+        }
+
+        glDepthMask(GL_TRUE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    void Renderer::dibujarModelos() {
+        for (const auto& modelo : modelos) {
+            const Material& material = modelo->getMaterial();
+            shaderProgram.setUniformVec3("uKa", material.Ka);
+            shaderProgram.setUniformVec3("uKd", material.Kd);
+            shaderProgram.setUniformVec3("uKs", material.Ks);
+            shaderProgram.setUniformFloat("uShininess", material.shininess);
+            modelo->dibujar(shaderProgram);
+        }
+    }
+
+    void Renderer::notificarAnadirLuz(TipoLuz tipo) {
+        luces.emplace_back(tipo);
+    }
+
+    void Renderer::notificarEditarLuz(std::size_t indice, TipoLuz tipo,
+                                      const PropiedadesLuz& propiedades) {
+        luces.at(indice) = Luz(tipo, propiedades);
+    }
+
+    void Renderer::notificarEliminarLuz(std::size_t indice) {
+        if (indice >= luces.size()) throw std::out_of_range("No existe la luz indicada.");
+        luces.erase(luces.begin() + indice);
     }
 
     /**
